@@ -15,12 +15,6 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
-  const url = new URL(request.url);
-  // Never intercept or redirect auth API requests
-  if (url.pathname.startsWith("/api/auth")) {
-    return;
-  }
-
   if (isSignInPage(request) && (await convexAuth.isAuthenticated())) {
     return nextjsMiddlewareRedirect(request, "/dashboard");
   }
@@ -31,5 +25,6 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
 });
 
 export const config = {
+  // Run middleware on all app routes and API routes so convexAuthNextjsMiddleware can proxy /api/auth
   matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };
