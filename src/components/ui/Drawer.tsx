@@ -31,7 +31,7 @@ export function Drawer({ isOpen, onClose, title, subtitle, children }: DrawerPro
             exit="exit"
             className="drawer"
           >
-            <div class="drawer-head">
+            <div className="drawer-head">
               <div>
                 <h2>{title}</h2>
                 {subtitle && <div className="sub">{subtitle}</div>}

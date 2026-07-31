@@ -1,9 +1,11 @@
-export const fadeInUp = {
+import type { Variants } from "motion/react";
+
+export const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } }
 };
 
-export const staggerContainer = {
+export const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -14,18 +16,18 @@ export const staggerContainer = {
   }
 };
 
-export const scaleIn = {
+export const scaleIn: Variants = {
   hidden: { opacity: 0, scale: 0.94 },
   visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } }
 };
 
-export const slideFromRight = {
+export const slideFromRight: Variants = {
   hidden: { x: "100%", opacity: 0.5 },
   visible: { x: 0, opacity: 1, transition: { type: "spring", damping: 28, stiffness: 220 } },
   exit: { x: "100%", opacity: 0, transition: { duration: 0.2, ease: "easeInOut" } }
 };
 
-export const backdropFade = {
+export const backdropFade: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.2 } },
   exit: { opacity: 0, transition: { duration: 0.2 } }
