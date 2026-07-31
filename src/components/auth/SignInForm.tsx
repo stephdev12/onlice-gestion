@@ -20,10 +20,14 @@ export function SignInForm() {
     const formData = new FormData(event.currentTarget);
     formData.set("flow", flow);
 
+    const params = Object.fromEntries(formData.entries());
+    console.debug("SignInForm submit params:", params);
+
     try {
       await signIn("password", formData);
       router.replace("/dashboard");
     } catch (err: any) {
+      console.error("Sign-in error:", err);
       setError(err.message || "Échec de l'authentification. Vérifiez vos identifiants.");
     } finally {
       setLoading(false);
