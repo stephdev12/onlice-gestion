@@ -3,6 +3,7 @@ import {
   createRouteMatcher,
   nextjsMiddlewareRedirect,
 } from "@convex-dev/auth/nextjs/server";
+import { NextResponse } from "next/server";
 
 const isSignInPage = createRouteMatcher(["/login"]);
 const isProtectedRoute = createRouteMatcher([
@@ -15,6 +16,8 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
+  console.log("[MW] path =", request.nextUrl.pathname, "method =", request.method);
+
   if (isSignInPage(request) && (await convexAuth.isAuthenticated())) {
     return nextjsMiddlewareRedirect(request, "/dashboard");
   }
@@ -25,6 +28,5 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
 });
 
 export const config = {
-  // Run middleware on all app routes and API routes so convexAuthNextjsMiddleware can proxy /api/auth
   matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };

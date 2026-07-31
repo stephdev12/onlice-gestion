@@ -1,10 +1,9 @@
 "use client";
 
 import { Sidebar } from "@/components/layout/Sidebar";
-import { Header } from "@/components/layout/Header";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../../../convex/_generated/api";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -12,12 +11,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const ensureCurrentUser = useMutation(api.profiles.ensureCurrentUser);
   const profile = useQuery(api.profiles.current);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.replace("/login");
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isLoading && !isAuthenticated) {
+      const timer = setTimeout(() => {
+        router.replace("/login");
+      }, 600);
+      return () => clearTimeout(timer);
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [mounted, isAuthenticated, isLoading, router]);
 
   useEffect(() => {
     if (isAuthenticated && profile === null) {
@@ -25,7 +32,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, profile, ensureCurrentUser]);
 
-  if (isLoading) {
+  if (isLoading || (!mounted && !isAuthenticated)) {
     return (
       <div
         style={{
@@ -45,10 +52,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     );
-  }
-
-  if (!isAuthenticated) {
-    return null;
   }
 
   return (

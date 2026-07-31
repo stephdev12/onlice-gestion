@@ -22,7 +22,7 @@ export function SignInForm() {
 
     try {
       await signIn("password", formData);
-      router.replace("/dashboard");
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.message || "Échec de l'authentification. Vérifiez vos identifiants.");
     } finally {
