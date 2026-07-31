@@ -1,0 +1,6 @@
+
+.env.local
+gittoken
+node_modules/
+.next/
+tsconfig.tsbuildinfo

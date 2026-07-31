@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onlice — Pipeline commercial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0D161D;
+    --paper:#FFFFFF;
+    --mist:#F4F7F7;
+    --mist-line:#E4E9E9;
+    --slate:#5B6670;
+    --orange:#F75406;
+    --orange-tint:#FDEDE5;
+    --teal:#016461;
+    --teal-tint:#E2F1F0;
+    --danger:#C22F1E;
+    --danger-tint:#FBEAE7;
+    --radius:12px;
+    --radius-sm:8px;
+    --gradient: linear-gradient(90deg, var(--orange) 0%, var(--teal) 100%);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Geist', -apple-system, sans-serif; -webkit-font-smoothing:antialiased;
+    line-height:1.5; height:100vh; overflow:hidden; display:flex; flex-direction:column;
+  }
+  button, input, select{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--ink); outline-offset:2px;}
+
+  /* Header / nav */
+  header{border-bottom:1px solid var(--mist-line); flex-shrink:0;}
+  .headbar{display:flex; align-items:center; justify-content:space-between; padding:16px 24px 0;}
+  .wordmark{font-size:19px; font-weight:700; letter-spacing:-0.01em;}
+  .wordmark .c{color:var(--orange);}
+  .avatar{
+    width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600;
+    flex-shrink:0;
+  }
+  nav.tabs{display:flex; gap:22px; padding:0 24px; overflow-x:auto;}
+  nav.tabs a{
+    font-size:14px; font-weight:500; color:var(--slate); text-decoration:none;
+    padding:14px 0 12px; position:relative; white-space:nowrap; cursor:default; opacity:0.55;
+  }
+  nav.tabs a.active{color:var(--ink); opacity:1; cursor:pointer;}
+  nav.tabs a.active::after{
+    content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--gradient); border-radius:2px;
+  }
+
+  /* Toolbar */
+  .toolbar{
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    padding:20px 24px; flex-shrink:0;
+  }
+  .toolbar h1{font-size:22px; font-weight:600; margin:0; letter-spacing:-0.01em;}
+  .toolbar .sub{font-size:13px; color:var(--slate); margin-top:3px;}
+  .toolbar-actions{display:flex; align-items:center; gap:10px;}
+
+  .btn{
+    font-size:14px; font-weight:500; padding:9px 16px; border-radius:var(--radius-sm);
+    border:1px solid transparent; cursor:pointer; transition:opacity .15s ease, border-color .15s ease;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn-accent{background:var(--orange); color:#fff;}
+  .btn-accent:hover{opacity:0.88;}
+  .btn-outline{background:var(--paper); color:var(--ink); border-color:var(--mist-line); font-size:13px; padding:8px 12px;}
+  .btn-outline:hover{border-color:var(--ink);}
+  .btn-ghost{background:transparent; color:var(--slate); border-color:transparent; font-size:13px; padding:6px 4px;}
+  .btn-ghost:hover{color:var(--ink);}
+  .btn-primary{background:var(--ink); color:#fff; width:100%; justify-content:center; padding:11px;}
+  .btn-primary:hover{opacity:0.88;}
+
+  /* Board */
+  .board-wrap{flex:1; overflow:auto; padding:0 24px 24px;}
+  .board{display:flex; gap:14px; min-height:100%;}
+  .column{
+    flex:0 0 260px; display:flex; flex-direction:column; background:var(--mist);
+    border-radius:var(--radius); padding:12px;
+  }
+  .col-head{display:flex; align-items:center; gap:8px; padding:4px 4px 12px;}
+  .col-dot{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+  .dot-new{background:var(--slate);}
+  .dot-progress{background:var(--orange);}
+  .dot-won{background:var(--teal);}
+  .col-title{font-size:13px; font-weight:600;}
+  .col-count{font-size:12px; color:var(--slate); margin-left:auto; font-family:'Geist Mono', monospace;}
+
+  .cardlist{display:flex; flex-direction:column; gap:8px; min-height:40px;}
+  .empty-col{font-size:12px; color:var(--slate); padding:14px 6px; text-align:center; opacity:0.7;}
+
+  .pcard{
+    background:var(--paper); border:1px solid var(--mist-line); border-radius:10px; padding:12px;
+    cursor:pointer; transition:box-shadow .15s ease, transform .15s ease;
+  }
+  .pcard:hover{box-shadow:0 4px 14px rgba(13,22,29,0.08); transform:translateY(-1px);}
+  .pcard .nom{font-size:14px; font-weight:600;}
+  .pcard .entreprise{font-size:12.5px; color:var(--slate); margin-top:1px;}
+  .pcard .meta-row{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px;}
+  .origin-badge{
+    font-size:10.5px; font-weight:600; padding:3px 8px; border-radius:100px; background:var(--mist); color:var(--slate);
+  }
+  .pcard .next-action{font-size:11.5px; color:var(--slate); margin-top:8px; line-height:1.4;}
+  .pcard-foot{display:flex; align-items:center; justify-content:space-between; margin-top:10px;}
+  .rep-avatar{
+    width:22px; height:22px; border-radius:50%; background:var(--ink); color:#fff; font-size:9.5px; font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .move-select{
+    font-size:11px; border:1px solid var(--mist-line); border-radius:6px; padding:3px 5px; color:var(--slate);
+    background:var(--paper); max-width:108px;
+  }
+
+  /* Overlay + drawer */
+  .overlay{
+    position:fixed; inset:0; background:rgba(13,22,29,0.35); opacity:0; pointer-events:none;
+    transition:opacity .18s ease; z-index:40;
+  }
+  .overlay.show{opacity:1; pointer-events:auto;}
+  .drawer{
+    position:fixed; top:0; right:0; bottom:0; width:380px; max-width:92vw; background:var(--paper);
+    box-shadow:-10px 0 30px rgba(13,22,29,0.12); transform:translateX(100%); transition:transform .2s ease;
+    z-index:50; display:flex; flex-direction:column;
+  }
+  .drawer.show{transform:translateX(0);}
+  .drawer-head{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+    padding:20px 20px 16px; border-bottom:1px solid var(--mist-line); flex-shrink:0;
+  }
+  .drawer-head h2{font-size:17px; font-weight:600; margin:0;}
+  .drawer-head .sub{font-size:13px; color:var(--slate); margin-top:2px;}
+  .icon-btn{
+    background:transparent; border:none; color:var(--slate); cursor:pointer; font-size:18px; line-height:1;
+    padding:4px; border-radius:6px;
+  }
+  .icon-btn:hover{background:var(--mist); color:var(--ink);}
+  .drawer-body{padding:18px 20px; overflow-y:auto; flex:1;}
+
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12.5px; font-weight:500; color:var(--slate); margin-bottom:6px;}
+  .field input, .field select, .field textarea{
+    width:100%; padding:9px 11px; border-radius:var(--radius-sm); border:1px solid var(--mist-line);
+    font-size:14px; color:var(--ink); background:var(--paper);
+  }
+  .field textarea{resize:vertical; min-height:56px;}
+  .field-err{font-size:11.5px; color:var(--danger); margin-top:4px; display:none;}
+  .field-err.show{display:block;}
+
+  .detail-meta{display:flex; flex-direction:column; gap:6px; font-size:13px; color:var(--slate); margin-bottom:18px;}
+  .detail-meta b{color:var(--ink); font-weight:500;}
+
+  .stage-select{width:100%; padding:9px 11px; border-radius:var(--radius-sm); border:1px solid var(--mist-line); font-size:14px; margin-bottom:20px; background:var(--paper);}
+
+  .tl-heading{font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--slate); margin:0 0 12px;}
+  .timeline{list-style:none; margin:0 0 18px; padding:0;}
+  .tl-item{position:relative; padding-left:18px; padding-bottom:16px; border-left:1.5px solid var(--mist-line); margin-left:3px;}
+  .tl-item:last-child{border-color:transparent; padding-bottom:0;}
+  .tl-item::before{
+    content:''; position:absolute; left:-4.5px; top:2px; width:8px; height:8px; border-radius:50%; background:var(--teal);
+  }
+  .tl-date{font-family:'Geist Mono', monospace; font-size:11px; color:var(--slate);}
+  .tl-label{font-size:13.5px; margin-top:2px;}
+
+  .note-row{display:flex; gap:8px; align-items:flex-start;}
+  .note-row textarea{flex:1;}
+  .note-row button{flex-shrink:0; padding:9px 12px; font-size:13px;}
+
+  /* Loading / banner */
+  .loading-wrap{flex:1; display:flex; align-items:center; justify-content:center; color:var(--slate); font-size:14px;}
+  .banner{
+    font-size:13px; padding:10px 24px; background:var(--danger-tint); color:var(--danger); display:none; flex-shrink:0;
+  }
+  .banner.show{display:block;}
+
+  @media (max-width:640px){
+    .drawer{width:100vw; max-width:100vw;}
+    .toolbar{padding:16px;}
+    .headbar{padding:14px 16px 0;}
+    nav.tabs{padding:0 16px;}
+    .board-wrap{padding:0 16px 16px;}
+    .column{flex-basis:78vw;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="headbar">
+    <div class="wordmark">onli<span class="c">c</span>e</div>
+    <div class="avatar">MK</div>
+  </div>
+  <nav class="tabs">
+    <a class="active">Pipeline</a>
+    <a>Projets</a>
+    <a>Équipe</a>
+    <a>Finance</a>
+    <a>Documents</a>
+  </nav>
+</header>
+
+<div id="banner" class="banner">La sauvegarde a échoué — tes changements restent visibles ici mais ne seront pas conservés au rechargement.</div>
+
+<div class="toolbar">
+  <div>
+    <h1>Pipeline commercial</h1>
+    <div class="sub" id="countLabel">Chargement…</div>
+  </div>
+  <div class="toolbar-actions">
+    <button class="btn btn-outline" id="resetBtn">Réinitialiser la démo</button>
+    <button class="btn btn-accent" id="addBtn">+ Nouveau prospect</button>
+  </div>
+</div>
+
+<div class="board-wrap">
+  <div id="loadingWrap" class="loading-wrap">Chargement du pipeline…</div>
+  <div class="board" id="board" style="display:none;"></div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- Detail drawer -->
+<div class="drawer" id="detailDrawer">
+  <div class="drawer-head">
+    <div>
+      <h2 id="dName">—</h2>
+      <div class="sub" id="dEntreprise">—</div>
+    </div>
+    <button class="icon-btn" id="closeDetail" aria-label="Fermer">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="detail-meta">
+      <div>Téléphone : <b id="dTel">—</b></div>
+      <div>Origine : <b id="dOrigin">—</b></div>
+      <div>Responsable : <b id="dRep">—</b></div>
+    </div>
+
+    <label style="font-size:12.5px; font-weight:500; color:var(--slate); display:block; margin-bottom:6px;">Étape</label>
+    <select class="stage-select" id="dStageSelect"></select>
+
+    <p class="tl-heading">Chronologie</p>
+    <ul class="timeline" id="dTimeline"></ul>
+
+    <p class="tl-heading">Ajouter une note</p>
+    <div class="note-row">
+      <textarea id="noteInput" placeholder="Ex : appel effectué, en attente de retour…"></textarea>
+      <button class="btn btn-outline" id="addNoteBtn">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add prospect drawer -->
+<div class="drawer" id="addDrawer">
+  <div class="drawer-head">
+    <div><h2>Nouveau prospect</h2><div class="sub">Ajouté à l'étape "Nouveau prospect"</div></div>
+    <button class="icon-btn" id="closeAdd" aria-label="Fermer">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="field">
+      <label for="fNom">Nom *</label>
+      <input id="fNom" type="text" placeholder="Ex : Paul Etoundi">
+      <div class="field-err" id="fNomErr">Le nom est requis.</div>
+    </div>
+    <div class="field">
+      <label for="fEntreprise">Entreprise</label>
+      <input id="fEntreprise" type="text" placeholder="Ex : Boutique Ada">
+    </div>
+    <div class="field">
+      <label for="fTel">Téléphone / WhatsApp</label>
+      <input id="fTel" type="text" placeholder="+237 6 …">
+    </div>
+    <div class="field">
+      <label for="fOrigin">Origine</label>
+      <select id="fOrigin">
+        <option>Facebook</option>
+        <option>Instagram</option>
+        <option>WhatsApp</option>
+        <option>Référence</option>
+        <option>Site web</option>
+        <option>Salon</option>
+        <option>Autre</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="fAction">Prochaine action</label>
+      <input id="fAction" type="text" placeholder="Ex : Premier appel demain 10h">
+    </div>
+    <div class="field">
+      <label for="fRep">Responsable (initiales)</label>
+      <input id="fRep" type="text" maxlength="2" placeholder="Ex : MK">
+    </div>
+    <button class="btn btn-primary" id="submitAdd">Ajouter le prospect</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'onlice-crm-prospects';
+
+  var STAGES = [
+    { id:'nouveau', label:'Nouveau prospect', group:'new' },
+    { id:'contact', label:'Premier contact', group:'progress' },
+    { id:'qualification', label:'Qualification', group:'progress' },
+    { id:'proposition', label:'Proposition envoyée', group:'progress' },
+    { id:'negociation', label:'Négociation', group:'progress' },
+    { id:'client', label:'Client', group:'won' },
+    { id:'termine', label:'Projet terminé', group:'won' },
+    { id:'fidele', label:'Client fidèle', group:'won' }
+  ];
+  var STAGE_MAP = {};
+  STAGES.forEach(function(s){ STAGE_MAP[s.id] = s; });
+
+  function seedData(){
+    return [
+      { id:'p1', nom:'Paul Etoundi', entreprise:'Boutique Ada', tel:'+237 6 77 12 34 56', origine:'Facebook', stage:'nouveau', action:'Premier appel demain 10h', rep:'MK',
+        timeline:[{date:'22 juil., 09:10', label:'Création du prospect'}]},
+      { id:'p2', nom:'Solange Mballa', entreprise:'Restaurant Le Manioc d\u2019Or', tel:'+237 6 90 22 11 05', origine:'WhatsApp', stage:'contact', action:'Relancer mercredi 15h', rep:'AF',
+        timeline:[{date:'18 juil., 08:30', label:'Création du prospect'},{date:'18 juil., 09:15', label:'Premier appel'},{date:'19 juil., 14:20', label:'Relance WhatsApp'}]},
+      { id:'p3', nom:'Ferdinand Nkolo', entreprise:'Nkolo Bâtiment', tel:'+237 6 55 44 33 22', origine:'Référence', stage:'qualification', action:'Envoyer le devis', rep:'MK',
+        timeline:[{date:'14 juil., 10:00', label:'Création du prospect'},{date:'15 juil., 11:30', label:'Appel de qualification'},{date:'17 juil., 09:00', label:'Déplacé vers "Qualification"'}]},
+      { id:'p4', nom:'Aïcha Souleymane', entreprise:'Pharmacie Bonamoussadi', tel:'+237 6 71 98 76 54', origine:'Site web', stage:'proposition', action:'Relance devis vendredi', rep:'AF',
+        timeline:[{date:'10 juil., 08:45', label:'Création du prospect'},{date:'12 juil., 16:00', label:'Devis envoyé'},{date:'12 juil., 16:02', label:'Déplacé vers "Proposition envoyée"'}]},
+      { id:'p5', nom:'Jean-Baptiste Fouda', entreprise:'Fouda & Fils Transport', tel:'+237 6 80 15 26 37', origine:'Salon', stage:'negociation', action:'RDV négociation lundi', rep:'MK',
+        timeline:[{date:'2 juil., 09:00', label:'Création du prospect'},{date:'5 juil., 10:30', label:'Proposition discutée'},{date:'20 juil., 11:00', label:'Déplacé vers "Négociation"'}]},
+      { id:'p6', nom:'Grace Ateba', entreprise:'Salon Grace Beauté', tel:'+237 6 95 41 20 18', origine:'Instagram', stage:'client', action:'Lancer le kickoff projet', rep:'AF',
+        timeline:[{date:'20 juin, 09:00', label:'Création du prospect'},{date:'2 juil., 15:00', label:'Signature'},{date:'2 juil., 15:05', label:'Déplacé vers "Client"'}]},
+      { id:'p7', nom:'Robert Essomba', entreprise:'Essomba Distribution', tel:'+237 6 60 33 12 09', origine:'Référence', stage:'termine', action:'Demander un avis client', rep:'MK',
+        timeline:[{date:'2 mai, 09:00', label:'Création du prospect'},{date:'20 mai, 15:00', label:'Signature'},{date:'15 juil., 17:00', label:'Déplacé vers "Projet terminé"'}]},
+      { id:'p8', nom:'Chantal Ngo', entreprise:'Épicerie Ngo', tel:'+237 6 50 77 88 21', origine:'Référence', stage:'fidele', action:'Renouvellement contrat annuel', rep:'AF',
+        timeline:[{date:'10 janv., 09:00', label:'Création du prospect'},{date:'1 mars, 10:00', label:'Signature'},{date:'12 juil., 12:00', label:'Déplacé vers "Client fidèle"'}]},
+      { id:'p9', nom:'Vincent Talla', entreprise:'Talla Menuiserie', tel:'+237 6 66 09 44 71', origine:'WhatsApp', stage:'nouveau', action:'Qualifier le besoin', rep:'MK',
+        timeline:[{date:'24 juil., 08:00', label:'Création du prospect'}]}
+    ];
+  }
+
+  var prospects = [];
+  var selectedId = null;
+
+  var boardEl = document.getElementById('board');
+  var loadingWrap = document.getElementById('loadingWrap');
+  var countLabel = document.getElementById('countLabel');
+  var overlay = document.getElementById('overlay');
+  var detailDrawer = document.getElementById('detailDrawer');
+  var addDrawer = document.getElementById('addDrawer');
+  var banner = document.getElementById('banner');
+
+  function dotClass(group){
+    return group === 'new' ? 'dot-new' : group === 'progress' ? 'dot-progress' : 'dot-won';
+  }
+
+  function render(){
+    countLabel.textContent = prospects.length + ' prospect' + (prospects.length !== 1 ? 's' : '') + ' actifs';
+    boardEl.innerHTML = '';
+    STAGES.forEach(function(stage){
+      var col = document.createElement('div');
+      col.className = 'column';
+
+      var head = document.createElement('div');
+      head.className = 'col-head';
+      head.innerHTML = '<span class="col-dot ' + dotClass(stage.group) + '"></span>' +
+        '<span class="col-title">' + stage.label + '</span>';
+      var list = prospects.filter(function(p){ return p.stage === stage.id; });
+      var countSpan = document.createElement('span');
+      countSpan.className = 'col-count';
+      countSpan.textContent = list.length;
+      head.appendChild(countSpan);
+      col.appendChild(head);
+
+      var cardlist = document.createElement('div');
+      cardlist.className = 'cardlist';
+
+      if (list.length === 0){
+        var empty = document.createElement('div');
+        empty.className = 'empty-col';
+        empty.textContent = '—';
+        cardlist.appendChild(empty);
+      }
+
+      list.forEach(function(p){
+        cardlist.appendChild(buildCard(p));
+      });
+
+      col.appendChild(cardlist);
+      boardEl.appendChild(col);
+    });
+  }
+
+  function buildCard(p){
+    var card = document.createElement('div');
+    card.className = 'pcard';
+    card.addEventListener('click', function(e){
+      if (e.target.tagName === 'SELECT' || e.target.tagName === 'OPTION') return;
+      openDetail(p.id);
+    });
+
+    var nom = document.createElement('div');
+    nom.className = 'nom';
+    nom.textContent = p.nom;
+    card.appendChild(nom);
+
+    var ent = document.createElement('div');
+    ent.className = 'entreprise';
+    ent.textContent = p.entreprise || '—';
+    card.appendChild(ent);
+
+    var metaRow = document.createElement('div');
+    metaRow.className = 'meta-row';
+    var badge = document.createElement('span');
+    badge.className = 'origin-badge';
+    badge.textContent = p.origine;
+    metaRow.appendChild(badge);
+    card.appendChild(metaRow);
+
+    if (p.action){
+      var action = document.createElement('div');
+      action.className = 'next-action';
+      action.textContent = '→ ' + p.action;
+      card.appendChild(action);
+    }
+
+    var foot = document.createElement('div');
+    foot.className = 'pcard-foot';
+
+    var select = document.createElement('select');
+    select.className = 'move-select';
+    STAGES.forEach(function(s){
+      var opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.label;
+      if (s.id === p.stage) opt.selected = true;
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', function(e){
+      moveStage(p.id, e.target.value);
+    });
+    foot.appendChild(select);
+
+    var avatar = document.createElement('div');
+    avatar.className = 'rep-avatar';
+    avatar.textContent = p.rep || '—';
+    foot.appendChild(avatar);
+
+    card.appendChild(foot);
+    return card;
+  }
+
+  function formatNow(){
+    var d = new Date();
+    var months = ['jan.','fév.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+    var hh = String(d.getHours()).padStart(2,'0');
+    var mm = String(d.getMinutes()).padStart(2,'0');
+    return d.getDate() + ' ' + months[d.getMonth()] + ', ' + hh + ':' + mm;
+  }
+
+  function moveStage(id, newStage){
+    var p = prospects.find(function(x){ return x.id === id; });
+    if (!p || p.stage === newStage) return;
+    p.stage = newStage;
+    p.timeline.push({ date: formatNow(), label: 'Déplacé vers "' + STAGE_MAP[newStage].label + '"' });
+    persist();
+    render();
+    if (selectedId === id) fillDetail(p);
+  }
+
+  function addProspect(data){
+    var p = {
+      id: 'p' + Date.now(),
+      nom: data.nom, entreprise: data.entreprise, tel: data.tel,
+      origine: data.origine, action: data.action, rep: data.rep,
+      stage: 'nouveau',
+      timeline: [{ date: formatNow(), label: 'Création du prospect' }]
+    };
+    prospects.push(p);
+    persist();
+    render();
+  }
+
+  function addNote(id, text){
+    var p = prospects.find(function(x){ return x.id === id; });
+    if (!p || !text.trim()) return;
+    p.timeline.push({ date: formatNow(), label: text.trim() });
+    persist();
+    fillDetail(p);
+  }
+
+  /* --- Detail drawer --- */
+  function openDetail(id){
+    selectedId = id;
+    var p = prospects.find(function(x){ return x.id === id; });
+    if (!p) return;
+    fillDetail(p);
+    showDrawer(detailDrawer);
+  }
+
+  function fillDetail(p){
+    document.getElementById('dName').textContent = p.nom;
+    document.getElementById('dEntreprise').textContent = p.entreprise || '—';
+    document.getElementById('dTel').textContent = p.tel || '—';
+    document.getElementById('dOrigin').textContent = p.origine || '—';
+    document.getElementById('dRep').textContent = p.rep || '—';
+
+    var stageSelect = document.getElementById('dStageSelect');
+    stageSelect.innerHTML = '';
+    STAGES.forEach(function(s){
+      var opt = document.createElement('option');
+      opt.value = s.id; opt.textContent = s.label;
+      if (s.id === p.stage) opt.selected = true;
+      stageSelect.appendChild(opt);
+    });
+    stageSelect.onchange = function(e){ moveStage(p.id, e.target.value); };
+
+    var tl = document.getElementById('dTimeline');
+    tl.innerHTML = '';
+    p.timeline.slice().reverse().forEach(function(ev){
+      var li = document.createElement('li');
+      li.className = 'tl-item';
+      li.innerHTML = '<div class="tl-date">' + ev.date + '</div><div class="tl-label">' + ev.label + '</div>';
+      tl.appendChild(li);
+    });
+
+    document.getElementById('noteInput').value = '';
+  }
+
+  /* --- Drawers / overlay --- */
+  function showDrawer(el){
+    overlay.classList.add('show');
+    el.classList.add('show');
+  }
+  function hideDrawers(){
+    overlay.classList.remove('show');
+    detailDrawer.classList.remove('show');
+    addDrawer.classList.remove('show');
+    selectedId = null;
+  }
+  overlay.addEventListener('click', hideDrawers);
+  document.getElementById('closeDetail').addEventListener('click', hideDrawers);
+  document.getElementById('closeAdd').addEventListener('click', hideDrawers);
+
+  document.getElementById('addBtn').addEventListener('click', function(){
+    ['fNom','fEntreprise','fTel','fAction','fRep'].forEach(function(id){ document.getElementById(id).value = ''; });
+    document.getElementById('fOrigin').selectedIndex = 0;
+    document.getElementById('fNomErr').classList.remove('show');
+    showDrawer(addDrawer);
+  });
+
+  document.getElementById('submitAdd').addEventListener('click', function(){
+    var nom = document.getElementById('fNom').value.trim();
+    if (!nom){
+      document.getElementById('fNomErr').classList.add('show');
+      return;
+    }
+    addProspect({
+      nom: nom,
+      entreprise: document.getElementById('fEntreprise').value.trim(),
+      tel: document.getElementById('fTel').value.trim(),
+      origine: document.getElementById('fOrigin').value,
+      action: document.getElementById('fAction').value.trim(),
+      rep: document.getElementById('fRep').value.trim().toUpperCase()
+    });
+    hideDrawers();
+  });
+
+  document.getElementById('addNoteBtn').addEventListener('click', function(){
+    var input = document.getElementById('noteInput');
+    if (selectedId) addNote(selectedId, input.value);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    if (!confirm('Réinitialiser le pipeline avec les données de démonstration ? Cela remplacera les prospects actuels.')) return;
+    prospects = seedData();
+    persist();
+    render();
+    hideDrawers();
+  });
+
+  /* --- Persistence --- */
+  function persist(){
+    try {
+      window.storage.set(STORAGE_KEY, JSON.stringify(prospects), false).then(function(result){
+        if (!result) banner.classList.add('show');
+        else banner.classList.remove('show');
+      }).catch(function(){ banner.classList.add('show'); });
+    } catch (e) {
+      banner.classList.add('show');
+    }
+  }
+
+  function init(){
+    window.storage.get(STORAGE_KEY, false).then(function(result){
+      if (result && result.value) {
+        try { prospects = JSON.parse(result.value); }
+        catch (e) { prospects = seedData(); persist(); }
+      } else {
+        prospects = seedData();
+        persist();
+      }
+    }).catch(function(){
+      prospects = seedData();
+      persist();
+    }).finally(function(){
+      loadingWrap.style.display = 'none';
+      boardEl.style.display = 'flex';
+      render();
+    });
+  }
+
+  init();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onlice — Équipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0D161D; --paper:#FFFFFF; --mist:#F4F7F7; --mist-line:#E4E9E9; --slate:#5B6670;
+    --orange:#F75406; --orange-tint:#FDEDE5; --teal:#016461; --teal-tint:#E2F1F0;
+    --danger:#C22F1E; --danger-tint:#FBEAE7;
+    --radius:12px; --radius-sm:8px;
+    --gradient: linear-gradient(90deg, var(--orange) 0%, var(--teal) 100%);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Geist', -apple-system, sans-serif; -webkit-font-smoothing:antialiased; line-height:1.5; min-height:100vh;}
+  button, input, select, textarea{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--ink); outline-offset:2px;}
+
+  header{border-bottom:1px solid var(--mist-line);}
+  .headbar{display:flex; align-items:center; justify-content:space-between; padding:16px 24px 0;}
+  .wordmark{font-size:19px; font-weight:700; letter-spacing:-0.01em;}
+  .wordmark .c{color:var(--orange);}
+  .avatar{width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; flex-shrink:0;}
+  nav.tabs{display:flex; gap:22px; padding:0 24px; overflow-x:auto;}
+  nav.tabs a{font-size:14px; font-weight:500; color:var(--slate); text-decoration:none; padding:14px 0 12px; position:relative; white-space:nowrap; cursor:default; opacity:0.55;}
+  nav.tabs a.active{color:var(--ink); opacity:1; cursor:pointer;}
+  nav.tabs a.active::after{content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--gradient); border-radius:2px;}
+
+  .toolbar{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:20px 24px;}
+  .toolbar h1{font-size:22px; font-weight:600; margin:0; letter-spacing:-0.01em;}
+  .toolbar .sub{font-size:13px; color:var(--slate); margin-top:3px;}
+
+  .btn{font-size:14px; font-weight:500; padding:9px 16px; border-radius:var(--radius-sm); border:1px solid transparent; cursor:pointer; transition:opacity .15s ease, border-color .15s ease, background .15s ease; display:inline-flex; align-items:center; gap:6px;}
+  .btn-accent{background:var(--orange); color:#fff;}
+  .btn-accent:hover{opacity:0.88;}
+  .btn-outline{background:var(--paper); color:var(--ink); border-color:var(--mist-line); font-size:13px; padding:8px 12px;}
+  .btn-outline:hover{border-color:var(--ink);}
+  .btn-primary{background:var(--ink); color:#fff; width:100%; justify-content:center; padding:11px;}
+  .btn-primary:hover{opacity:0.88;}
+  .btn-approve{background:var(--teal); color:#fff; font-size:12.5px; padding:6px 12px;}
+  .btn-approve:hover{opacity:.88;}
+  .btn-reject{background:var(--paper); color:var(--danger); border:1px solid var(--danger-tint); font-size:12.5px; padding:6px 12px;}
+  .btn-reject:hover{background:var(--danger-tint);}
+
+  .content{padding:0 24px 40px;}
+  .loading-wrap{padding:80px 0; text-align:center; color:var(--slate); font-size:14px;}
+
+  .section-heading{font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--slate); margin:0 0 12px;}
+
+  /* Pending panel */
+  .pending-wrap{margin-bottom:32px;}
+  .pending-row{display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--mist-line); border-radius:10px; margin-bottom:8px; flex-wrap:wrap;}
+  .pending-row .p-avatar{width:32px; height:32px; border-radius:50%; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; flex-shrink:0;}
+  .pending-row .info{flex:1; min-width:180px;}
+  .pending-row .name{font-size:13.5px; font-weight:600;}
+  .pending-row .name .type{font-weight:400; color:var(--slate);}
+  .pending-row .desc{font-size:12px; color:var(--slate); margin-top:2px;}
+  .pending-row .actions{display:flex; gap:8px;}
+  .empty-note{font-size:13px; color:var(--slate); padding:6px 0;}
+
+  /* Team grid */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:14px;}
+  .ecard{border:1px solid var(--mist-line); border-radius:var(--radius); padding:16px; cursor:pointer; transition:box-shadow .15s ease, transform .15s ease; background:var(--paper);}
+  .ecard:hover{box-shadow:0 4px 14px rgba(13,22,29,0.08); transform:translateY(-1px);}
+  .ecard-top{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
+  .ecard-avatar{width:40px; height:40px; border-radius:50%; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; flex-shrink:0;}
+  .ecard-name{font-size:14.5px; font-weight:600;}
+  .ecard-role{font-size:12px; color:var(--slate); margin-top:1px;}
+  .ecard-foot{display:flex; align-items:center; justify-content:space-between; margin-top:2px; flex-wrap:wrap; gap:6px;}
+
+  .badge{font-size:11px; font-weight:600; padding:4px 9px; border-radius:100px; white-space:nowrap;}
+  .badge-neutral{background:var(--mist); color:var(--slate);}
+  .badge-pending{background:var(--orange-tint); color:var(--orange);}
+  .badge-approved{background:var(--teal-tint); color:var(--teal);}
+  .badge-rejected{background:var(--danger-tint); color:var(--danger);}
+  .conges-note{font-size:11.5px; color:var(--slate); font-family:'Geist Mono', monospace;}
+
+  /* Overlay + drawer */
+  .overlay{position:fixed; inset:0; background:rgba(13,22,29,0.35); opacity:0; pointer-events:none; transition:opacity .18s ease; z-index:40;}
+  .overlay.show{opacity:1; pointer-events:auto;}
+  .drawer{position:fixed; top:0; right:0; bottom:0; width:440px; max-width:94vw; background:var(--paper); box-shadow:-10px 0 30px rgba(13,22,29,0.12); transform:translateX(100%); transition:transform .2s ease; z-index:50; display:flex; flex-direction:column;}
+  .drawer.show{transform:translateX(0);}
+  .drawer-head{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:20px 20px 16px; border-bottom:1px solid var(--mist-line); flex-shrink:0;}
+  .drawer-head h2{font-size:17px; font-weight:600; margin:0;}
+  .drawer-head .sub{font-size:13px; color:var(--slate); margin-top:2px;}
+  .icon-btn{background:transparent; border:none; color:var(--slate); cursor:pointer; font-size:18px; line-height:1; padding:4px; border-radius:6px;}
+  .icon-btn:hover{background:var(--mist); color:var(--ink);}
+  .drawer-body{padding:18px 20px; overflow-y:auto; flex:1;}
+
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12.5px; font-weight:500; color:var(--slate); margin-bottom:6px;}
+  .field input, .field select, .field textarea{width:100%; padding:9px 11px; border-radius:var(--radius-sm); border:1px solid var(--mist-line); font-size:14px; color:var(--ink); background:var(--paper);}
+  .field textarea{resize:vertical; min-height:56px;}
+  .field-err{font-size:11.5px; color:var(--danger); margin-top:4px; display:none;}
+  .field-err.show{display:block;}
+  .field-row{display:flex; gap:10px;}
+  .field-row .field{flex:1;}
+
+  .meta-list{font-size:13px; color:var(--slate); margin-bottom:14px;}
+  .meta-list div{margin-bottom:5px;}
+  .meta-list b{color:var(--ink); font-weight:500;}
+
+  .skills-row{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px;}
+  .badge-skill{background:var(--mist); color:var(--ink); font-weight:500;}
+
+  .salary-row{display:flex; align-items:center; gap:10px; font-size:14px; margin-bottom:22px;}
+  .salary-value{font-family:'Geist Mono', monospace;}
+  .reveal-link{font-size:12px; color:var(--slate); background:none; border:none; cursor:pointer; text-decoration:underline; padding:0;}
+
+  .conges-summary{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+  .conges-days{font-size:13.5px;}
+  .conges-days b{font-family:'Geist Mono', monospace;}
+
+  .creq{border:1px solid var(--mist-line); border-radius:10px; padding:10px 12px; margin-bottom:8px;}
+  .creq-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:8px;}
+  .creq-type{font-size:13px; font-weight:500;}
+  .creq-dates{font-size:11.5px; color:var(--slate);}
+  .creq-motif{font-size:12px; color:var(--slate); margin-top:2px;}
+
+  .add-toggle{font-size:12.5px; color:var(--ink); background:var(--mist); border:1px dashed var(--mist-line); border-radius:10px; padding:9px; text-align:center; cursor:pointer; margin:10px 0 18px;}
+  .add-toggle:hover{border-color:var(--ink);}
+  .add-form{border:1px solid var(--mist-line); border-radius:10px; padding:12px; margin-bottom:18px; display:none;}
+  .add-form.show{display:block;}
+  .add-form-actions{display:flex; gap:8px; margin-top:4px;}
+  .add-form-actions .btn{flex:1;}
+
+  .rapport-box{border:1px solid var(--mist-line); border-radius:10px; padding:14px; margin-bottom:12px;}
+  .rapport-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
+  .rapport-date{font-size:12px; color:var(--slate); font-family:'Geist Mono', monospace;}
+  .rapport-q{font-size:11px; font-weight:600; color:var(--slate); text-transform:uppercase; letter-spacing:0.05em; margin:10px 0 3px;}
+  .rapport-q:first-of-type{margin-top:4px;}
+  .rapport-a{font-size:13.5px;}
+  .empty-note-box{font-size:13px; color:var(--slate); border:1px dashed var(--mist-line); border-radius:10px; padding:14px; text-align:center; margin-bottom:12px;}
+
+  .banner{font-size:13px; padding:10px 24px; background:var(--danger-tint); color:var(--danger); display:none;}
+  .banner.show{display:block;}
+
+  @media (max-width:640px){
+    .drawer{width:100vw; max-width:100vw;}
+    .toolbar{padding:16px;}
+    .headbar{padding:14px 16px 0;}
+    nav.tabs{padding:0 16px;}
+    .content{padding:0 16px 32px;}
+    .field-row{flex-direction:column; gap:14px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="headbar">
+    <div class="wordmark">onli<span class="c">c</span>e</div>
+    <div class="avatar">MK</div>
+  </div>
+  <nav class="tabs">
+    <a>Pipeline</a>
+    <a>Projets</a>
+    <a class="active">Équipe</a>
+    <a>Finance</a>
+    <a>Documents</a>
+  </nav>
+</header>
+
+<div id="banner" class="banner">La sauvegarde a échoué — tes changements restent visibles ici mais ne seront pas conservés au rechargement.</div>
+
+<div class="toolbar">
+  <div>
+    <h1>Équipe</h1>
+    <div class="sub" id="countLabel">Chargement…</div>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <button class="btn btn-outline" id="resetBtn">Réinitialiser la démo</button>
+    <button class="btn btn-accent" id="addEmployeeBtn">+ Nouvel employé</button>
+  </div>
+</div>
+
+<div class="content">
+  <div id="loadingWrap" class="loading-wrap">Chargement de l'équipe…</div>
+  <div id="mainContent" style="display:none;">
+    <div class="pending-wrap">
+      <p class="section-heading">Demandes en attente</p>
+      <div id="pendingList"></div>
+    </div>
+    <p class="section-heading">Annuaire</p>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- Detail drawer -->
+<div class="drawer" id="detailDrawer">
+  <div class="drawer-head">
+    <div>
+      <h2 id="dNom">—</h2>
+      <div class="sub" id="dPoste">—</div>
+    </div>
+    <button class="icon-btn" id="closeDetail" aria-label="Fermer">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="meta-list">
+      <div>Département : <b id="dDept">—</b></div>
+      <div>Depuis le : <b id="dEmbauche">—</b></div>
+      <div>Disponibilité : <b id="dDispo">—</b></div>
+    </div>
+    <div class="skills-row" id="dSkills"></div>
+
+    <div class="salary-row">
+      <span>Salaire :</span>
+      <span class="salary-value" id="dSalary">••••••</span>
+      <button class="reveal-link" id="revealSalary">Afficher</button>
+    </div>
+
+    <p class="section-heading">Congés</p>
+    <div class="conges-summary">
+      <div class="conges-days" id="dSolde">—</div>
+    </div>
+    <div id="dCongesHistory"></div>
+    <div class="add-toggle" id="addCongeToggle">+ Nouvelle demande</div>
+    <div class="add-form" id="addCongeForm">
+      <div class="field">
+        <label>Type</label>
+        <select id="cType">
+          <option value="conge">Congé</option>
+          <option value="absence">Absence</option>
+          <option value="retard">Retard</option>
+          <option value="mission">Mission extérieure</option>
+          <option value="teletravail">Télétravail</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Date début</label><input id="cDebut" type="date"></div>
+        <div class="field"><label>Date fin</label><input id="cFin" type="date"></div>
+      </div>
+      <div class="field"><label>Motif</label><textarea id="cMotif" placeholder="Ex : vacances en famille"></textarea></div>
+      <div class="add-form-actions">
+        <button class="btn btn-outline" id="cancelConge">Annuler</button>
+        <button class="btn btn-primary" id="submitConge" style="width:auto; flex:1;">Envoyer</button>
+      </div>
+    </div>
+
+    <p class="section-heading">Rapport hebdomadaire</p>
+    <div id="rapportZone"></div>
+  </div>
+</div>
+
+<!-- Add employee drawer -->
+<div class="drawer" id="addDrawer">
+  <div class="drawer-head">
+    <div><h2>Nouvel employé</h2><div class="sub">Ajouté à l'annuaire</div></div>
+    <button class="icon-btn" id="closeAdd" aria-label="Fermer">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="field">
+      <label>Nom complet *</label>
+      <input id="eNom" type="text" placeholder="Ex : Grace Ateba">
+      <div class="field-err" id="eNomErr">Le nom est requis.</div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Poste</label><input id="ePoste" type="text" placeholder="Ex : Comptable"></div>
+      <div class="field">
+        <label>Département</label>
+        <select id="eDept">
+          <option>Direction</option><option>Commercial</option><option>Marketing</option>
+          <option>Développement</option><option>Design</option><option>RH</option>
+          <option>Finance</option><option>Support</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Date d'embauche</label><input id="eEmbauche" type="date"></div>
+      <div class="field">
+        <label>Disponibilité</label>
+        <select id="eDispo"><option value="temps_plein">Temps plein</option><option value="mi_temps">Mi-temps</option><option value="freelance">Freelance</option></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Compétences (séparées par des virgules)</label>
+      <input id="eSkills" type="text" placeholder="Ex : Excel, Comptabilité">
+    </div>
+    <div class="field">
+      <label>Salaire (XAF, optionnel)</label>
+      <input id="eSalaire" type="number" placeholder="Ex : 300000">
+    </div>
+    <button class="btn btn-primary" id="submitEmployee">Ajouter à l'équipe</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'onlice-hr-data';
+  var TYPE_LABELS = { conge:'Congé', absence:'Absence', retard:'Retard', mission:'Mission extérieure', teletravail:'Télétravail' };
+  var DISPO_LABELS = { temps_plein:'Temps plein', mi_temps:'Mi-temps', freelance:'Freelance' };
+
+  function seedData(){
+    return {
+      employes:[
+        { id:'e1', nom:'Marc Kwedi', initials:'MK', poste:'Chef de projet', departement:'Direction', embauche:'2022-03-01', dispo:'temps_plein', competences:['Gestion de projet','Relation client','Vente'], solde:14, salaire:450000 },
+        { id:'e2', nom:'Aline Foka', initials:'AF', poste:'Chargée de compte', departement:'Commercial', embauche:'2023-06-15', dispo:'temps_plein', competences:['Vente','Négociation','CRM'], solde:20, salaire:300000 },
+        { id:'e3', nom:'Sarah Kamga', initials:'SK', poste:'Designer', departement:'Design', embauche:'2024-01-10', dispo:'temps_plein', competences:['Figma','Branding','UI/UX'], solde:9, salaire:275000 },
+        { id:'e4', nom:'Roland Tchoua', initials:'RT', poste:'Développeur Front', departement:'Développement', embauche:'2023-09-01', dispo:'freelance', competences:['React','CSS','Responsive'], solde:null, salaire:null },
+        { id:'e5', nom:'Junior Nka', initials:'JN', poste:'Développeur Back', departement:'Développement', embauche:'2024-05-20', dispo:'temps_plein', competences:['Node.js','Convex','API'], solde:18, salaire:320000 }
+      ],
+      demandes:[
+        { id:'c1', employeId:'e2', type:'conge', debut:'2026-08-03', fin:'2026-08-10', motif:'Vacances en famille', statut:'en_attente' },
+        { id:'c2', employeId:'e3', type:'teletravail', debut:'2026-07-29', fin:'2026-07-29', motif:'Rendez-vous personnel', statut:'en_attente' },
+        { id:'c3', employeId:'e5', type:'absence', debut:'2026-07-20', fin:'2026-07-20', motif:'Maladie', statut:'approuve' },
+        { id:'c4', employeId:'e1', type:'mission', debut:'2026-06-15', fin:'2026-06-17', motif:'Salon entrepreneurial à Douala', statut:'approuve' },
+        { id:'c5', employeId:'e4', type:'retard', debut:'2026-07-24', fin:'2026-07-24', motif:'Embouteillage', statut:'refuse' }
+      ],
+      rapports:[
+        { id:'r1', employeId:'e2', semaine:'2026-07-24', realisations:'3 nouveaux prospects qualifiés, devis envoyé à Aïcha Souleymane', problemes:'Le client Fouda Transport hésite sur le prix', besoins:'Un argument commercial sur la garantie', objectifs:'Signer Fouda Transport la semaine prochaine', statut:'a_valider' },
+        { id:'r2', employeId:'e5', semaine:'2026-07-17', realisations:'API de paiement en cours, tests unitaires lancés', problemes:'Bug d\u2019intégration avec le fournisseur mobile money', besoins:'Accès à l\u2019environnement sandbox du partenaire', objectifs:'Finir l\u2019intégration paiement', statut:'valide' }
+      ]
+    };
+  }
+
+  var data = { employes:[], demandes:[], rapports:[] };
+  var selectedId = null;
+
+  var gridEl = document.getElementById('grid');
+  var pendingList = document.getElementById('pendingList');
+  var loadingWrap = document.getElementById('loadingWrap');
+  var mainContent = document.getElementById('mainContent');
+  var countLabel = document.getElementById('countLabel');
+  var overlay = document.getElementById('overlay');
+  var detailDrawer = document.getElementById('detailDrawer');
+  var addDrawer = document.getElementById('addDrawer');
+  var banner = document.getElementById('banner');
+
+  function formatDate(iso){
+    if (!iso) return '—';
+    var months = ['jan.','fév.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+    var parts = iso.split('-');
+    return parseInt(parts[2],10) + ' ' + months[parseInt(parts[1],10)-1] + ' ' + parts[0];
+  }
+
+  function empName(id){ var e = data.employes.find(function(x){ return x.id===id; }); return e ? e.nom : '—'; }
+  function empInitials(id){ var e = data.employes.find(function(x){ return x.id===id; }); return e ? e.initials : '—'; }
+
+  function render(){
+    countLabel.textContent = data.employes.length + ' employés · ' + data.demandes.filter(function(d){return d.statut==='en_attente';}).length + ' demande(s) en attente';
+    renderPending();
+    renderGrid();
+  }
+
+  function renderPending(){
+    var pending = data.demandes.filter(function(d){ return d.statut === 'en_attente'; });
+    pendingList.innerHTML = '';
+    if (pending.length === 0){
+      var e = document.createElement('div');
+      e.className = 'empty-note';
+      e.textContent = 'Aucune demande en attente.';
+      pendingList.appendChild(e);
+      return;
+    }
+    pending.forEach(function(d){
+      var row = document.createElement('div');
+      row.className = 'pending-row';
+      var av = document.createElement('div');
+      av.className = 'p-avatar';
+      av.textContent = empInitials(d.employeId);
+      row.appendChild(av);
+      var info = document.createElement('div');
+      info.className = 'info';
+      info.innerHTML = '<div class="name">' + empName(d.employeId) + ' <span class="type">— ' + TYPE_LABELS[d.type] + '</span></div>' +
+        '<div class="desc">' + formatDate(d.debut) + (d.fin && d.fin !== d.debut ? ' → ' + formatDate(d.fin) : '') + (d.motif ? ' · ' + d.motif : '') + '</div>';
+      row.appendChild(info);
+      var actions = document.createElement('div');
+      actions.className = 'actions';
+      var approve = document.createElement('button');
+      approve.className = 'btn btn-approve'; approve.textContent = 'Approuver';
+      approve.addEventListener('click', function(){ setDemandeStatus(d.id, 'approuve'); });
+      var reject = document.createElement('button');
+      reject.className = 'btn btn-reject'; reject.textContent = 'Refuser';
+      reject.addEventListener('click', function(){ setDemandeStatus(d.id, 'refuse'); });
+      actions.appendChild(approve); actions.appendChild(reject);
+      row.appendChild(actions);
+      pendingList.appendChild(row);
+    });
+  }
+
+  function setDemandeStatus(id, statut){
+    var d = data.demandes.find(function(x){ return x.id===id; });
+    if (!d) return;
+    d.statut = statut;
+    persist();
+    render();
+    if (selectedId) fillDetail();
+  }
+
+  function renderGrid(){
+    gridEl.innerHTML = '';
+    data.employes.forEach(function(e){
+      gridEl.appendChild(buildCard(e));
+    });
+  }
+
+  function buildCard(e){
+    var card = document.createElement('div');
+    card.className = 'ecard';
+    card.addEventListener('click', function(){ openDetail(e.id); });
+
+    var top = document.createElement('div');
+    top.className = 'ecard-top';
+    var av = document.createElement('div');
+    av.className = 'ecard-avatar'; av.textContent = e.initials;
+    top.appendChild(av);
+    var nameWrap = document.createElement('div');
+    nameWrap.innerHTML = '<div class="ecard-name">' + e.nom + '</div><div class="ecard-role">' + (e.poste || '—') + ' · ' + (e.departement || '—') + '</div>';
+    top.appendChild(nameWrap);
+    card.appendChild(top);
+
+    var foot = document.createElement('div');
+    foot.className = 'ecard-foot';
+    var dispoBadge = document.createElement('span');
+    dispoBadge.className = 'badge badge-neutral';
+    dispoBadge.textContent = DISPO_LABELS[e.dispo] || e.dispo;
+    foot.appendChild(dispoBadge);
+
+    if (e.solde !== null && e.solde !== undefined){
+      var solde = document.createElement('span');
+      solde.className = 'conges-note';
+      solde.textContent = e.solde + ' j. congés';
+      foot.appendChild(solde);
+    }
+    card.appendChild(foot);
+
+    var report = data.rapports.find(function(r){ return r.employeId === e.id && r.statut === 'a_valider'; });
+    if (report){
+      var flag = document.createElement('div');
+      flag.style.marginTop = '8px';
+      flag.innerHTML = '<span class="badge badge-pending">Rapport à valider</span>';
+      card.appendChild(flag);
+    }
+
+    return card;
+  }
+
+  /* --- Detail drawer --- */
+  function openDetail(id){
+    selectedId = id;
+    fillDetail();
+    document.getElementById('addCongeForm').classList.remove('show');
+    showDrawer(detailDrawer);
+  }
+
+  function fillDetail(){
+    var e = data.employes.find(function(x){ return x.id === selectedId; });
+    if (!e) return;
+
+    document.getElementById('dNom').textContent = e.nom;
+    document.getElementById('dPoste').textContent = e.poste || '—';
+    document.getElementById('dDept').textContent = e.departement || '—';
+    document.getElementById('dEmbauche').textContent = formatDate(e.embauche);
+    document.getElementById('dDispo').textContent = DISPO_LABELS[e.dispo] || e.dispo;
+
+    var skillsEl = document.getElementById('dSkills');
+    skillsEl.innerHTML = '';
+    (e.competences || []).forEach(function(s){
+      var b = document.createElement('span');
+      b.className = 'badge badge-skill';
+      b.textContent = s;
+      skillsEl.appendChild(b);
+    });
+
+    var salaryEl = document.getElementById('dSalary');
+    var revealBtn = document.getElementById('revealSalary');
+    if (e.salaire){
+      salaryEl.dataset.value = e.salaire.toLocaleString('fr-FR') + ' XAF';
+      salaryEl.textContent = '••••••';
+      revealBtn.style.display = 'inline';
+      revealBtn.textContent = 'Afficher';
+    } else {
+      salaryEl.textContent = 'Facturation au forfait';
+      revealBtn.style.display = 'none';
+    }
+
+    var solde = document.getElementById('dSolde');
+    if (e.solde !== null && e.solde !== undefined){
+      solde.innerHTML = '<b>' + e.solde + '</b> jours restants sur 25';
+    } else {
+      solde.textContent = 'Freelance — pas de solde de congés';
+    }
+
+    var hist = document.getElementById('dCongesHistory');
+    hist.innerHTML = '';
+    var mine = data.demandes.filter(function(d){ return d.employeId === e.id; });
+    if (mine.length === 0){
+      var empty = document.createElement('div');
+      empty.className = 'empty-note';
+      empty.textContent = 'Aucune demande pour l\u2019instant.';
+      hist.appendChild(empty);
+    } else {
+      mine.forEach(function(d){
+        var row = document.createElement('div');
+        row.className = 'creq';
+        var statusClass = d.statut === 'approuve' ? 'badge-approved' : d.statut === 'refuse' ? 'badge-rejected' : 'badge-pending';
+        var statusLabel = d.statut === 'approuve' ? 'Approuvé' : d.statut === 'refuse' ? 'Refusé' : 'En attente';
+        row.innerHTML = '<div class="creq-top"><span class="creq-type">' + TYPE_LABELS[d.type] + '</span><span class="badge ' + statusClass + '">' + statusLabel + '</span></div>' +
+          '<div class="creq-dates">' + formatDate(d.debut) + (d.fin && d.fin !== d.debut ? ' → ' + formatDate(d.fin) : '') + '</div>' +
+          (d.motif ? '<div class="creq-motif">' + d.motif + '</div>' : '');
+        hist.appendChild(row);
+      });
+    }
+
+    renderRapport(e.id);
+  }
+
+  function currentWeekFriday(){
+    var d = new Date();
+    var day = d.getDay();
+    var diff = (day - 5 + 7) % 7;
+    d.setDate(d.getDate() - diff);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function renderRapport(employeId){
+    var zone = document.getElementById('rapportZone');
+    zone.innerHTML = '';
+    var rapport = data.rapports.filter(function(r){ return r.employeId === employeId; })
+      .sort(function(a,b){ return a.semaine < b.semaine ? 1 : -1; })[0];
+
+    if (!rapport){
+      var empty = document.createElement('div');
+      empty.className = 'empty-note-box';
+      empty.innerHTML = 'Aucun rapport soumis pour l\u2019instant.<br><button class="btn btn-outline" id="submitRapportBtn" style="margin-top:10px;">Soumettre le rapport de la semaine</button>';
+      zone.appendChild(empty);
+      document.getElementById('submitRapportBtn').addEventListener('click', function(){ openRapportForm(employeId); });
+      return;
+    }
+
+    var box = document.createElement('div');
+    box.className = 'rapport-box';
+    var statusClass = rapport.statut === 'valide' ? 'badge-approved' : 'badge-pending';
+    var statusLabel = rapport.statut === 'valide' ? 'Validé' : 'À valider';
+    box.innerHTML =
+      '<div class="rapport-head"><span class="rapport-date">Semaine du ' + formatDate(rapport.semaine) + '</span><span class="badge ' + statusClass + '">' + statusLabel + '</span></div>' +
+      '<p class="rapport-q">Réalisations</p><p class="rapport-a">' + rapport.realisations + '</p>' +
+      '<p class="rapport-q">Problèmes</p><p class="rapport-a">' + (rapport.problemes || '—') + '</p>' +
+      '<p class="rapport-q">Besoins</p><p class="rapport-a">' + (rapport.besoins || '—') + '</p>' +
+      '<p class="rapport-q">Objectifs</p><p class="rapport-a">' + (rapport.objectifs || '—') + '</p>';
+    zone.appendChild(box);
+
+    if (rapport.statut === 'a_valider'){
+      var validateBtn = document.createElement('button');
+      validateBtn.className = 'btn btn-approve';
+      validateBtn.style.width = '100%'; validateBtn.style.justifyContent = 'center';
+      validateBtn.textContent = 'Valider ce rapport';
+      validateBtn.addEventListener('click', function(){
+        rapport.statut = 'valide';
+        persist();
+        renderGrid();
+        fillDetail();
+      });
+      zone.appendChild(validateBtn);
+    }
+  }
+
+  function openRapportForm(employeId){
+    var zone = document.getElementById('rapportZone');
+    zone.innerHTML =
+      '<div class="field"><label>Qu\u2019as-tu réalisé ?</label><textarea id="rReal"></textarea></div>' +
+      '<div class="field"><label>Quels problèmes ?</label><textarea id="rProb"></textarea></div>' +
+      '<div class="field"><label>Quels besoins ?</label><textarea id="rBesoin"></textarea></div>' +
+      '<div class="field"><label>Objectifs semaine prochaine ?</label><textarea id="rObj"></textarea></div>' +
+      '<button class="btn btn-primary" id="saveRapportBtn">Envoyer le rapport</button>';
+    document.getElementById('saveRapportBtn').addEventListener('click', function(){
+      data.rapports.push({
+        id: 'r' + Date.now(), employeId: employeId, semaine: currentWeekFriday(),
+        realisations: document.getElementById('rReal').value.trim() || '—',
+        problemes: document.getElementById('rProb').value.trim(),
+        besoins: document.getElementById('rBesoin').value.trim(),
+        objectifs: document.getElementById('rObj').value.trim(),
+        statut: 'a_valider'
+      });
+      persist();
+      renderGrid();
+      fillDetail();
+    });
+  }
+
+  document.getElementById('revealSalary').addEventListener('click', function(){
+    var el = document.getElementById('dSalary');
+    var btn = this;
+    if (btn.textContent === 'Afficher'){ el.textContent = el.dataset.value; btn.textContent = 'Masquer'; }
+    else { el.textContent = '••••••'; btn.textContent = 'Afficher'; }
+  });
+
+  function addConge(employeId, d){
+    data.demandes.push({ id:'c'+Date.now(), employeId: employeId, type:d.type, debut:d.debut, fin:d.fin || d.debut, motif:d.motif, statut:'en_attente' });
+    persist();
+    render();
+    fillDetail();
+  }
+
+  function addEmployee(d){
+    var initials = d.nom.trim().split(/\s+/).map(function(w){return w[0];}).join('').substring(0,2).toUpperCase();
+    data.employes.push({
+      id:'e'+Date.now(), nom:d.nom, initials:initials, poste:d.poste, departement:d.departement,
+      embauche:d.embauche, dispo:d.dispo, competences:d.competences,
+      solde: d.dispo === 'freelance' ? null : 25,
+      salaire: d.salaire || null
+    });
+    persist();
+    render();
+  }
+
+  /* --- Drawers --- */
+  function showDrawer(el){ overlay.classList.add('show'); el.classList.add('show'); }
+  function hideDrawers(){ overlay.classList.remove('show'); detailDrawer.classList.remove('show'); addDrawer.classList.remove('show'); selectedId = null; }
+  overlay.addEventListener('click', hideDrawers);
+  document.getElementById('closeDetail').addEventListener('click', hideDrawers);
+  document.getElementById('closeAdd').addEventListener('click', hideDrawers);
+
+  document.getElementById('addEmployeeBtn').addEventListener('click', function(){
+    ['eNom','ePoste','eEmbauche','eSkills','eSalaire'].forEach(function(id){ document.getElementById(id).value=''; });
+    document.getElementById('eDept').selectedIndex = 0;
+    document.getElementById('eDispo').selectedIndex = 0;
+    document.getElementById('eNomErr').classList.remove('show');
+    showDrawer(addDrawer);
+  });
+
+  document.getElementById('submitEmployee').addEventListener('click', function(){
+    var nom = document.getElementById('eNom').value.trim();
+    if (!nom){ document.getElementById('eNomErr').classList.add('show'); return; }
+    addEmployee({
+      nom: nom,
+      poste: document.getElementById('ePoste').value.trim(),
+      departement: document.getElementById('eDept').value,
+      embauche: document.getElementById('eEmbauche').value,
+      dispo: document.getElementById('eDispo').value,
+      competences: document.getElementById('eSkills').value.split(',').map(function(s){return s.trim();}).filter(Boolean),
+      salaire: parseInt(document.getElementById('eSalaire').value, 10) || null
+    });
+    hideDrawers();
+  });
+
+  document.getElementById('addCongeToggle').addEventListener('click', function(){
+    document.getElementById('cType').selectedIndex = 0;
+    document.getElementById('cDebut').value = '';
+    document.getElementById('cFin').value = '';
+    document.getElementById('cMotif').value = '';
+    document.getElementById('addCongeForm').classList.add('show');
+  });
+  document.getElementById('cancelConge').addEventListener('click', function(){
+    document.getElementById('addCongeForm').classList.remove('show');
+  });
+  document.getElementById('submitConge').addEventListener('click', function(){
+    addConge(selectedId, {
+      type: document.getElementById('cType').value,
+      debut: document.getElementById('cDebut').value,
+      fin: document.getElementById('cFin').value,
+      motif: document.getElementById('cMotif').value.trim()
+    });
+    document.getElementById('addCongeForm').classList.remove('show');
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    if (!confirm('Réinitialiser l\u2019équipe avec les données de démonstration ?')) return;
+    data = seedData();
+    persist();
+    render();
+    hideDrawers();
+  });
+
+  /* --- Persistence --- */
+  function persist(){
+    try {
+      window.storage.set(STORAGE_KEY, JSON.stringify(data), false).then(function(result){
+        if (!result) banner.classList.add('show'); else banner.classList.remove('show');
+      }).catch(function(){ banner.classList.add('show'); });
+    } catch (e) { banner.classList.add('show'); }
+  }
+
+  function init(){
+    window.storage.get(STORAGE_KEY, false).then(function(result){
+      if (result && result.value) {
+        try { data = JSON.parse(result.value); }
+        catch (e) { data = seedData(); persist(); }
+      } else {
+        data = seedData();
+        persist();
+      }
+    }).catch(function(){
+      data = seedData();
+      persist();
+    }).finally(function(){
+      loadingWrap.style.display = 'none';
+      mainContent.style.display = 'block';
+      render();
+    });
+  }
+
+  init();
+})();
+</script>
+
+</body>
+</html>

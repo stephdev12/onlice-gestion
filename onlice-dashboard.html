@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onlice — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0D161D; --paper:#FFFFFF; --mist:#F4F7F7; --mist-line:#E4E9E9; --slate:#5B6670;
+    --orange:#F75406; --orange-tint:#FDEDE5; --teal:#016461; --teal-tint:#E2F1F0;
+    --danger:#C22F1E; --danger-tint:#FBEAE7;
+    --radius:12px; --radius-sm:8px;
+    --gradient: linear-gradient(90deg, var(--orange) 0%, var(--teal) 100%);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Geist', -apple-system, sans-serif; -webkit-font-smoothing:antialiased; line-height:1.5;}
+  button, input, select{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--ink); outline-offset:2px;}
+
+  header{border-bottom:1px solid var(--mist-line);}
+  .headbar{display:flex; align-items:center; justify-content:space-between; padding:16px 24px 0;}
+  .wordmark{font-size:19px; font-weight:700; letter-spacing:-0.01em;}
+  .wordmark .c{color:var(--orange);}
+  .avatar{width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; flex-shrink:0;}
+  nav.tabs{display:flex; gap:22px; padding:0 24px; overflow-x:auto;}
+  nav.tabs a{font-size:14px; font-weight:500; color:var(--slate); text-decoration:none; padding:14px 0 12px; position:relative; white-space:nowrap; cursor:default; opacity:0.55;}
+  nav.tabs a.active{color:var(--ink); opacity:1; cursor:pointer;}
+  nav.tabs a.active::after{content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--gradient); border-radius:2px;}
+
+  .toolbar{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:20px 24px;}
+  .toolbar h1{font-size:22px; font-weight:600; margin:0; letter-spacing:-0.01em;}
+  .toolbar .sub{font-size:13px; color:var(--slate); margin-top:3px;}
+
+  .period-toggle{display:flex; border:1px solid var(--mist-line); border-radius:8px; overflow:hidden; flex-shrink:0;}
+  .period-toggle button{background:var(--paper); border:none; padding:7px 14px; font-size:12.5px; color:var(--slate); cursor:pointer;}
+  .period-toggle button.active{background:var(--ink); color:#fff;}
+
+  .content{padding:0 24px 48px;}
+
+  .kpi-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(210px,1fr)); gap:14px; margin-bottom:28px;}
+  .kpi-card{border:1px solid var(--mist-line); border-radius:var(--radius); padding:18px;}
+  .kpi-label{font-size:12px; color:var(--slate); font-weight:500; margin-bottom:8px;}
+  .kpi-value{font-size:25px; font-weight:600; letter-spacing:-0.01em;}
+  .kpi-value .unit{font-size:13px; font-weight:500; color:var(--slate); margin-left:3px;}
+  .kpi-trend{font-size:12px; font-weight:600; margin-top:9px; display:inline-flex; align-items:center; gap:4px;}
+  .trend-up{color:var(--teal);}
+  .trend-down{color:var(--danger);}
+  .kpi-sub{font-size:12.5px; color:var(--slate); margin-top:9px;}
+
+  .dash-columns{display:grid; grid-template-columns:1.3fr 1fr; gap:16px; align-items:start;}
+  @media (max-width:900px){ .dash-columns{grid-template-columns:1fr;} }
+
+  .panel{border:1px solid var(--mist-line); border-radius:var(--radius); padding:18px; margin-bottom:16px;}
+  .panel h3{font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--slate); margin:0 0 18px;}
+
+  .chart{display:flex; align-items:flex-end; gap:12px; height:140px;}
+  .chart-group{flex:1; display:flex; flex-direction:column; align-items:center;}
+  .chart-bars{display:flex; align-items:flex-end; gap:3px; height:120px;}
+  .chart-bar{width:11px; border-radius:3px 3px 0 0;}
+  .bar-revenu{background:var(--teal);}
+  .bar-depense{background:var(--mist-line);}
+  .chart-month{font-size:10.5px; color:var(--slate); margin-top:8px;}
+  .chart-legend{display:flex; gap:18px; font-size:11.5px; color:var(--slate); margin-top:14px; padding-top:14px; border-top:1px solid var(--mist-line);}
+  .legend-dot{width:8px; height:8px; border-radius:2px; display:inline-block; margin-right:5px; vertical-align:middle;}
+
+  .wl-row{margin-bottom:14px;}
+  .wl-row:last-child{margin-bottom:0;}
+  .wl-top{display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;}
+  .wl-top .count{font-family:'Geist Mono', monospace; color:var(--slate); font-size:12px;}
+  .wl-bar-track{height:7px; background:var(--mist); border-radius:4px; overflow:hidden;}
+  .wl-bar-fill{height:100%; background:var(--ink); border-radius:4px;}
+
+  .list-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--mist-line); gap:10px;}
+  .list-row:last-child{border-bottom:none; padding-bottom:0;}
+  .list-row .name{font-weight:500; font-size:13.5px;}
+  .list-row .sub{font-size:12px; color:var(--slate); margin-top:1px;}
+  .list-row .value{font-family:'Geist Mono', monospace; font-size:13px; flex-shrink:0;}
+
+  .alert-row{display:flex; align-items:flex-start; gap:10px; padding:12px; background:var(--danger-tint); border-radius:10px;}
+  .alert-row .dot{width:7px; height:7px; border-radius:50%; background:var(--danger); margin-top:5px; flex-shrink:0;}
+  .alert-row .t{font-size:13.5px; font-weight:500; color:var(--ink);}
+  .alert-row .s{font-size:12px; color:var(--slate); margin-top:1px;}
+
+  @media (max-width:640px){
+    .toolbar{padding:16px; flex-direction:column; align-items:flex-start;}
+    .headbar{padding:14px 16px 0;}
+    nav.tabs{padding:0 16px;}
+    .content{padding:0 16px 36px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="headbar">
+    <div class="wordmark">onli<span class="c">c</span>e</div>
+    <div class="avatar">MK</div>
+  </div>
+  <nav class="tabs">
+    <a class="active">Dashboard</a>
+    <a>Pipeline</a>
+    <a>Projets</a>
+    <a>Équipe</a>
+    <a>Finance</a>
+    <a>Documents</a>
+  </nav>
+</header>
+
+<div class="toolbar">
+  <div>
+    <h1>Tableau de bord</h1>
+    <div class="sub">L'état de l'entreprise, en un coup d'œil</div>
+  </div>
+  <div class="period-toggle">
+    <button class="active" id="btnMois">Ce mois</button>
+    <button id="btnTrimestre">Ce trimestre</button>
+  </div>
+</div>
+
+<div class="content">
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Chiffre d'affaires</div>
+      <div class="kpi-value"><span id="kpiCA">4 850 000</span><span class="unit">XAF</span></div>
+      <div class="kpi-trend trend-up" id="kpiCATrend">▲ 12% vs période précédente</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Trésorerie</div>
+      <div class="kpi-value">2 130 000<span class="unit">XAF</span></div>
+      <div class="kpi-trend trend-down">▼ 4% vs mois dernier</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Prospects actifs</div>
+      <div class="kpi-value">9</div>
+      <div class="kpi-sub">dans le pipeline commercial</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Projets</div>
+      <div class="kpi-value">3<span class="unit">en cours</span></div>
+      <div class="kpi-trend trend-down">1 en retard</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Devis envoyés</div>
+      <div class="kpi-value" id="kpiDevis">2</div>
+      <div class="kpi-sub" id="kpiDevisSub">en juillet</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Équipe</div>
+      <div class="kpi-value">5<span class="unit">employés</span></div>
+      <div class="kpi-sub">2 demandes en attente</div>
+    </div>
+  </div>
+
+  <div class="dash-columns">
+    <div>
+      <div class="panel">
+        <h3>Revenus vs dépenses — 6 derniers mois</h3>
+        <div class="chart" id="revChart"></div>
+        <div class="chart-legend">
+          <span><span class="legend-dot" style="background:var(--teal)"></span>Revenus</span>
+          <span><span class="legend-dot" style="background:var(--mist-line)"></span>Dépenses</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Charge de travail par équipe</h3>
+        <div id="workload"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3>Projets en retard</h3>
+        <div class="alert-row">
+          <span class="dot"></span>
+          <div>
+            <div class="t">Programme fidélité — Épicerie Ngo</div>
+            <div class="s">Échéance dépassée du 20 juillet · 68% terminé</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Clients les plus rentables</h3>
+        <div id="topClients"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Performance commerciale</h3>
+        <div id="repPerf"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var months = [
+    { label:'Fév', revenu:3200000, depense:2400000 },
+    { label:'Mars', revenu:3550000, depense:2500000 },
+    { label:'Avr', revenu:3100000, depense:2600000 },
+    { label:'Mai', revenu:4000000, depense:2750000 },
+    { label:'Juin', revenu:4300000, depense:2900000 },
+    { label:'Juil', revenu:4850000, depense:3050000 }
+  ];
+
+  var chart = document.getElementById('revChart');
+  var maxVal = Math.max.apply(null, months.map(function(m){ return Math.max(m.revenu, m.depense); }));
+  months.forEach(function(m){
+    var group = document.createElement('div');
+    group.className = 'chart-group';
+    var bars = document.createElement('div');
+    bars.className = 'chart-bars';
+    var r = document.createElement('div');
+    r.className = 'chart-bar bar-revenu';
+    r.style.height = Math.round((m.revenu / maxVal) * 120) + 'px';
+    var d = document.createElement('div');
+    d.className = 'chart-bar bar-depense';
+    d.style.height = Math.round((m.depense / maxVal) * 120) + 'px';
+    bars.appendChild(r); bars.appendChild(d);
+    group.appendChild(bars);
+    var label = document.createElement('div');
+    label.className = 'chart-month';
+    label.textContent = m.label;
+    group.appendChild(label);
+    chart.appendChild(group);
+  });
+
+  var workloadData = [
+    { label:'Commercial', count:9, max:9 },
+    { label:'Développement', count:3, max:9 },
+    { label:'Design', count:2, max:9 },
+    { label:'Direction', count:3, max:9 }
+  ];
+  var wlEl = document.getElementById('workload');
+  workloadData.forEach(function(w){
+    var row = document.createElement('div');
+    row.className = 'wl-row';
+    row.innerHTML =
+      '<div class="wl-top"><span>' + w.label + '</span><span class="count">' + w.count + '</span></div>' +
+      '<div class="wl-bar-track"><div class="wl-bar-fill" style="width:' + Math.round((w.count/w.max)*100) + '%"></div></div>';
+    wlEl.appendChild(row);
+  });
+
+  var topClients = [
+    { nom:'Essomba Distribution', montant:'1 850 000 XAF' },
+    { nom:'Boutique Ada', montant:'1 200 000 XAF' },
+    { nom:'Salon Grace Beauté', montant:'680 000 XAF' }
+  ];
+  var tcEl = document.getElementById('topClients');
+  topClients.forEach(function(c){
+    var row = document.createElement('div');
+    row.className = 'list-row';
+    row.innerHTML = '<span class="name">' + c.nom + '</span><span class="value">' + c.montant + '</span>';
+    tcEl.appendChild(row);
+  });
+
+  var reps = [
+    { nom:'Aline Foka (AF)', sub:'4 prospects gérés', taux:'50%' },
+    { nom:'Marc Kwedi (MK)', sub:'5 prospects gérés', taux:'20%' }
+  ];
+  var repEl = document.getElementById('repPerf');
+  reps.forEach(function(r){
+    var row = document.createElement('div');
+    row.className = 'list-row';
+    row.innerHTML = '<div><div class="name">' + r.nom + '</div><div class="sub">' + r.sub + '</div></div><span class="value">' + r.taux + '</span>';
+    repEl.appendChild(row);
+  });
+
+  /* Period toggle — only flow metrics (CA, devis) change; cash/headcount are point-in-time */
+  var btnMois = document.getElementById('btnMois');
+  var btnTrimestre = document.getElementById('btnTrimestre');
+  btnMois.addEventListener('click', function(){
+    btnMois.classList.add('active'); btnTrimestre.classList.remove('active');
+    document.getElementById('kpiCA').textContent = '4 850 000';
+    document.getElementById('kpiCATrend').innerHTML = '▲ 12% vs période précédente';
+    document.getElementById('kpiDevis').textContent = '2';
+    document.getElementById('kpiDevisSub').textContent = 'en juillet';
+  });
+  btnTrimestre.addEventListener('click', function(){
+    btnTrimestre.classList.add('active'); btnMois.classList.remove('active');
+    document.getElementById('kpiCA').textContent = '13 150 000';
+    document.getElementById('kpiCATrend').innerHTML = '▲ 18% vs trimestre précédent';
+    document.getElementById('kpiDevis').textContent = '5';
+    document.getElementById('kpiDevisSub').textContent = 'mai – juillet';
+  });
+})();
+</script>
+
+</body>
+</html>
