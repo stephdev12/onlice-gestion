@@ -20,10 +20,10 @@ interface KanbanBoardProps {
   prospects: Prospect[];
   onSelectProspect: (id: string) => void;
   onMoveStage: (id: string, newStage: string, stageLabel: string) => void;
-  canEdit: boolean;
+  canEdit?: boolean;
 }
 
-export function KanbanBoard({ prospects, onSelectProspect, onMoveStage, canEdit }: KanbanBoardProps) {
+export function KanbanBoard({ prospects, onSelectProspect, onMoveStage, canEdit = true }: KanbanBoardProps) {
   return (
     <div className="kanban-board">
       {STAGES.map((stage) => {

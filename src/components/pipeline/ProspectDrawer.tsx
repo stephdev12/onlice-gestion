@@ -30,7 +30,7 @@ interface ProspectDrawerProps {
   onClose: () => void;
   onMoveStage: (id: string, newStage: string, stageLabel: string) => void;
   onAddNote: (id: string, text: string) => void;
-  canEdit: boolean;
+  canEdit?: boolean;
 }
 
 export function ProspectDrawer({
@@ -38,7 +38,7 @@ export function ProspectDrawer({
   onClose,
   onMoveStage,
   onAddNote,
-  canEdit,
+  canEdit = true,
 }: ProspectDrawerProps) {
   const [noteText, setNoteText] = useState("");
 
