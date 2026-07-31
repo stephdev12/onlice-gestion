@@ -48,7 +48,7 @@ interface EmployeeDrawerProps {
   onCreateDemande: (data: { type: string; debut: string; fin: string; motif?: string }) => void;
   onSubmitRapport: (data: { realisations: string; problemes?: string; besoins?: string; objectifs?: string }) => void;
   onValidateRapport: (rapportId: string) => void;
-  canEdit: boolean;
+  canEdit?: boolean;
 }
 
 export function EmployeeDrawer({
@@ -57,7 +57,7 @@ export function EmployeeDrawer({
   onCreateDemande,
   onSubmitRapport,
   onValidateRapport,
-  canEdit,
+  canEdit = true,
 }: EmployeeDrawerProps) {
   const [showSalary, setShowSalary] = useState(false);
   const [showLeaveForm, setShowLeaveForm] = useState(false);

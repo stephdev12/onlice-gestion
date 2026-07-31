@@ -18,10 +18,10 @@ interface Demande {
 interface PendingRequestsProps {
   requests: Demande[];
   onUpdateStatus: (id: string, status: "approuve" | "refuse") => void;
-  canEdit: boolean;
+  canEdit?: boolean;
 }
 
-export function PendingRequests({ requests, onUpdateStatus, canEdit }: PendingRequestsProps) {
+export function PendingRequests({ requests, onUpdateStatus, canEdit = true }: PendingRequestsProps) {
   if (requests.length === 0) {
     return (
       <div style={{ fontSize: "13px", color: "var(--slate)", padding: "8px 0" }}>
