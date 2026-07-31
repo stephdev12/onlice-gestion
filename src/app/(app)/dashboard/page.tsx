@@ -15,8 +15,11 @@ import { api } from "../../../../convex/_generated/api";
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<"mois" | "trimestre">("mois");
-  const stats = useQuery(api.dashboard.stats, { period });
   const profile = useQuery(api.profiles.current);
+  const stats = useQuery(
+    api.dashboard.stats,
+    profile ? { period } : "skip"
+  );
   const seed = useMutation(api.seed.seedAll);
   const [seeding, setSeeding] = useState(false);
 
