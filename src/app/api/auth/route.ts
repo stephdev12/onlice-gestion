@@ -10,10 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
-    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-    if (!convexUrl) {
-      return NextResponse.json({ error: "NEXT_PUBLIC_CONVEX_URL is not defined" }, { status: 500 });
-    }
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || "https://shiny-wolverine-92.convex.cloud";
 
     const isLocalhost = request.headers.get("host")?.includes("localhost") ?? true;
     const prefix = isLocalhost ? "" : "__Host-";
