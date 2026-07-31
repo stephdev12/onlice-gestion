@@ -12,8 +12,14 @@ export async function POST(request: NextRequest) {
 
     const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || "https://shiny-wolverine-92.convex.cloud";
 
-    const isLocalhost = request.headers.get("host")?.includes("localhost") ?? true;
-    const prefix = isLocalhost ? "" : "__Host-";
+    const host = request.headers.get("host") ?? "";
+    const isLocalhost =
+      host.includes("localhost") ||
+      host.startsWith("127.0.0.1") ||
+      host.startsWith("[::1]");
+    const isSecure = request.nextUrl.protocol === "https:";
+    const useHostPrefix = !isLocalhost && isSecure;
+    const prefix = useHostPrefix ? "__Host-" : "";
 
     if (action === "auth:signOut") {
       const response = NextResponse.json(null);
@@ -41,7 +47,7 @@ export async function POST(request: NextRequest) {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: !isLocalhost,
+        secure: useHostPrefix,
       });
     }
 
@@ -50,7 +56,7 @@ export async function POST(request: NextRequest) {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: !isLocalhost,
+        secure: useHostPrefix,
       });
     }
 
