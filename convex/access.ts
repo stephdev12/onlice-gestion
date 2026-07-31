@@ -22,16 +22,12 @@ export async function getCurrentProfile(ctx: AuthenticatedContext) {
     .withIndex("by_userId", (query) => query.eq("userId", userId))
     .unique();
 
-  if (!profile) {
-    throw new Error("User profile is not initialized");
-  }
-
   return profile;
 }
 
 export async function requireAdmin(ctx: AuthenticatedContext) {
   const profile = await getCurrentProfile(ctx);
-  if (profile.role !== "admin" && profile.role !== "ceo") {
+  if (!profile || (profile.role !== "admin" && profile.role !== "ceo")) {
     throw new Error("Unauthorized");
   }
   return profile;
@@ -39,7 +35,7 @@ export async function requireAdmin(ctx: AuthenticatedContext) {
 
 export async function requireCeo(ctx: AuthenticatedContext) {
   const profile = await getCurrentProfile(ctx);
-  if (profile.role !== "ceo") {
+  if (!profile || profile.role !== "ceo") {
     throw new Error("Unauthorized");
   }
   return profile;

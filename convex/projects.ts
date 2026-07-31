@@ -4,6 +4,7 @@ import { getCurrentEmployee, getCurrentProfile, requireAdmin } from "./access";
 
 async function canAccessProject(ctx: Parameters<typeof getCurrentProfile>[0], projectId: string) {
   const profile = await getCurrentProfile(ctx);
+  if (!profile) return false;
   if (profile.role === "admin" || profile.role === "ceo") return true;
 
   const employee = await getCurrentEmployee(ctx);
@@ -21,6 +22,7 @@ export const list = query({
   args: {},
   handler: async (ctx) => {
     const profile = await getCurrentProfile(ctx);
+    if (!profile) return [];
     const employee = profile.role === "employe" ? await getCurrentEmployee(ctx) : null;
     if (profile.role === "employe" && !employee) return [];
 
@@ -79,7 +81,7 @@ export const getById = query({
       .collect();
 
     const profile = await getCurrentProfile(ctx);
-    const employee = profile.role === "employe" ? await getCurrentEmployee(ctx) : null;
+    const employee = profile?.role === "employe" ? await getCurrentEmployee(ctx) : null;
     return {
       ...project,
       taches: employee ? tasks.filter((task) => task.assigneId === employee._id) : tasks,
@@ -148,7 +150,7 @@ export const updateTaskProgress = mutation({
     if (!task) throw new Error("Task not found");
 
     const profile = await getCurrentProfile(ctx);
-    if (profile.role === "employe") {
+    if (profile?.role === "employe") {
       const employee = await getCurrentEmployee(ctx);
       if (!employee || task.assigneId !== employee._id) {
         throw new Error("Unauthorized");

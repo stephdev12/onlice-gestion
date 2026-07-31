@@ -6,6 +6,25 @@ export const stats = query({
   args: { period: v.optional(v.string()) }, // "mois" | "trimestre"
   handler: async (ctx, args) => {
     const profile = await getCurrentProfile(ctx);
+    if (!profile) {
+      return {
+        role: "employe" as const,
+        isCeo: false,
+        isAdmin: false,
+        ca: null,
+        caTrend: null,
+        tresorerie: null,
+        tresorerieTrend: null,
+        prospectsActifs: 0,
+        projetsTotal: 0,
+        projetsRetard: 0,
+        devisCount: null,
+        devisSub: null,
+        employesTotal: 0,
+        demandesEnAttente: 0,
+        myTasksCount: 0,
+      };
+    }
     const isCeo = profile.role === "ceo";
     const isAdmin = profile.role === "admin";
     const period = args.period || "mois";
