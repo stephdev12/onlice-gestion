@@ -19,11 +19,10 @@ interface TaskItemProps {
   task: Task;
   onUpdateProgress: (id: string, progress: number) => void;
   onDelete: (id: string) => void;
-  canDelete: boolean;
-  canUpdateProgress: boolean;
+  canDelete?: boolean;
 }
 
-export function TaskItem({ task, onUpdateProgress, onDelete, canDelete, canUpdateProgress }: TaskItemProps) {
+export function TaskItem({ task, onUpdateProgress, onDelete, canDelete = true }: TaskItemProps) {
   const [progress, setProgress] = useState(task.progression);
 
   const priorityLabels: Record<string, string> = {
@@ -74,19 +73,21 @@ export function TaskItem({ task, onUpdateProgress, onDelete, canDelete, canUpdat
           {task.titre}
         </span>
         <Badge variant={task.priorite as any}>{priorityLabels[task.priorite] || task.priorite}</Badge>
-        {canDelete && <button
-          onClick={() => onDelete(task._id)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "var(--slate)",
-            cursor: "pointer",
-            padding: "2px 4px",
-          }}
-          title="Supprimer la tâche"
-        >
-          <Trash2 size={14} />
-        </button>}
+        {canDelete && (
+          <button
+            onClick={() => onDelete(task._id)}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--slate)",
+              cursor: "pointer",
+              padding: "2px 4px",
+            }}
+            title="Supprimer la tâche"
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
       </div>
 
       <div
@@ -111,7 +112,6 @@ export function TaskItem({ task, onUpdateProgress, onDelete, canDelete, canUpdat
           max={100}
           step={5}
           value={progress}
-          disabled={!canUpdateProgress}
           onChange={(e) => setProgress(parseInt(e.target.value, 10))}
           onMouseUp={() => onUpdateProgress(task._id, progress)}
           onTouchEnd={() => onUpdateProgress(task._id, progress)}

@@ -7,16 +7,14 @@ import { PendingRequests } from "@/components/equipe/PendingRequests";
 import { EmployeeDrawer } from "@/components/equipe/EmployeeDrawer";
 import { AddEmployeeDrawer } from "@/components/equipe/AddEmployeeDrawer";
 import { Button } from "@/components/ui/Button";
-import { useConvexAuth, useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Plus } from "lucide-react";
 
 export default function EquipePage() {
-  const { isAuthenticated } = useConvexAuth();
+  const employees = useQuery(api.employees.list);
+  const pendingRequests = useQuery(api.employees.pendingDemandes);
   const profile = useQuery(api.profiles.current);
-  const canManage = profile?.role === "admin" || profile?.role === "ceo";
-  const employees = useQuery(api.employees.list, isAuthenticated && canManage ? {} : "skip");
-  const pendingRequests = useQuery(api.employees.pendingDemandes, isAuthenticated && canManage ? {} : "skip");
 
   const createEmployee = useMutation(api.employees.create);
   const updateDemandeStatus = useMutation(api.employees.updateDemandeStatus);
@@ -29,14 +27,13 @@ export default function EquipePage() {
 
   const selectedEmployee = useQuery(
     api.employees.getById,
-    selectedId && employees?.some((employee) => employee._id === selectedId)
-      ? { id: selectedId as any }
-      : "skip"
+    selectedId ? { id: selectedId as any } : "skip"
   );
 
-  const activeEmployees = employees ?? [];
-  const activeRequests = pendingRequests ?? [];
-  const activeEmployee = selectedEmployee ?? null;
+  const isCeo = profile?.role === "ceo";
+  const canManage = isCeo || profile?.role === "admin";
+  const activeEmployees = employees || [];
+  const activeRequests = pendingRequests || [];
 
   const handleCreateEmployee = async (data: any) => {
     try {
@@ -93,14 +90,39 @@ export default function EquipePage() {
   return (
     <>
       <Header
-        title="Équipe"
-        subtitle={`${activeEmployees.length} employés · ${activeRequests.length} demande(s) en attente`}
+        title="Équipe & RH"
+        subtitle={`${activeEmployees.length} employé(s) · ${activeRequests.length} demande(s) en attente`}
         actions={actions}
       />
 
       <div className="content-body">
-        {activeRequests.length > 0 && (
-          <div style={{ marginBottom: "32px" }}>
+        {!canManage ? (
+          <div style={{ padding: "40px 0", textAlign: "center", color: "var(--slate)" }}>
+            Accès restreint. Seuls les administrateurs et le CEO peuvent consulter l'annuaire de l'équipe.
+          </div>
+        ) : (
+          <>
+            {activeRequests.length > 0 && (
+              <div style={{ marginBottom: "32px" }}>
+                <p
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    color: "var(--slate)",
+                    marginBottom: "12px",
+                  }}
+                >
+                  Demandes en attente
+                </p>
+                <PendingRequests
+                  requests={activeRequests as any}
+                  onUpdateStatus={handleUpdateDemandeStatus}
+                />
+              </div>
+            )}
+
             <p
               style={{
                 fontSize: "12px",
@@ -111,50 +133,43 @@ export default function EquipePage() {
                 marginBottom: "12px",
               }}
             >
-              Demandes en attente
+              Annuaire
             </p>
-            <PendingRequests
-              requests={activeRequests as any}
-              onUpdateStatus={handleUpdateDemandeStatus}
-              canEdit={canManage}
-            />
-          </div>
+
+            {employees === undefined ? (
+              <div style={{ padding: "40px 0", textAlign: "center", color: "var(--slate)" }}>
+                Chargement de l'équipe...
+              </div>
+            ) : activeEmployees.length === 0 ? (
+              <div style={{ padding: "40px 0", textAlign: "center", color: "var(--slate)" }}>
+                Aucun employé enregistré. Cliquez sur 'Nouvel employé' pour en ajouter un.
+              </div>
+            ) : (
+              <TeamGrid
+                employees={activeEmployees as any}
+                onSelectEmployee={(id) => setSelectedId(id)}
+              />
+            )}
+          </>
         )}
-
-        <p
-          style={{
-            fontSize: "12px",
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-            color: "var(--slate)",
-            marginBottom: "12px",
-          }}
-        >
-          Annuaire
-        </p>
-
-        <TeamGrid
-          employees={activeEmployees as any}
-          onSelectEmployee={(id) => setSelectedId(id)}
-        />
       </div>
 
       <EmployeeDrawer
-        employee={activeEmployee as any}
+        employee={selectedEmployee as any}
         onClose={() => setSelectedId(null)}
         onCreateDemande={handleCreateDemande}
         onSubmitRapport={handleSubmitRapport}
         onValidateRapport={handleValidateRapport}
-        canEdit={canManage}
       />
 
-      <AddEmployeeDrawer
-        isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        canAssignAdmin={profile?.role === "ceo"}
-        onSubmit={handleCreateEmployee}
-      />
+      {canManage && (
+        <AddEmployeeDrawer
+          isOpen={isAddOpen}
+          onClose={() => setIsAddOpen(false)}
+          onSubmit={handleCreateEmployee}
+          isCeo={isCeo}
+        />
+      )}
     </>
   );
 }

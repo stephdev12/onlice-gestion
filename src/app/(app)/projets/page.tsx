@@ -6,22 +6,14 @@ import { ProjectGrid } from "@/components/projets/ProjectGrid";
 import { ProjectDrawer } from "@/components/projets/ProjectDrawer";
 import { AddProjectDrawer } from "@/components/projets/AddProjectDrawer";
 import { Button } from "@/components/ui/Button";
-import { useConvexAuth, useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Plus } from "lucide-react";
 
 export default function ProjetsPage() {
-  const { isAuthenticated } = useConvexAuth();
+  const projects = useQuery(api.projects.list);
   const profile = useQuery(api.profiles.current);
-  const projects = useQuery(api.projects.list, isAuthenticated && profile ? {} : "skip");
-  const employees = useQuery(
-    api.employees.list,
-    isAuthenticated && (profile?.role === "admin" || profile?.role === "ceo") ? {} : "skip"
-  );
-  const notifications = useQuery(
-    api.projects.notifications,
-    isAuthenticated && profile?.role === "employe" ? {} : "skip"
-  );
+
   const createProject = useMutation(api.projects.create);
   const addTask = useMutation(api.projects.addTask);
   const updateTaskProgress = useMutation(api.projects.updateTaskProgress);
@@ -32,14 +24,11 @@ export default function ProjetsPage() {
 
   const selectedProject = useQuery(
     api.projects.getById,
-    selectedId && projects?.some((project) => project._id === selectedId)
-      ? { id: selectedId as any }
-      : "skip"
+    selectedId ? { id: selectedId as any } : "skip"
   );
 
-  const activeProjects = projects ?? [];
-  const canManage = profile?.role === "admin" || profile?.role === "ceo";
-  const activeProject = selectedProject ?? null;
+  const activeProjects = projects || [];
+  const canManage = profile?.role === "ceo" || profile?.role === "admin";
 
   const handleCreateProject = async (data: any) => {
     try {
@@ -82,44 +71,50 @@ export default function ProjetsPage() {
   return (
     <>
       <Header
-        title="Projets"
-        subtitle={`${activeProjects.length} projets en cours`}
+        title="Projets & Missions"
+        subtitle={
+          canManage
+            ? `${activeProjects.length} projet(s) géré(s)`
+            : `${activeProjects.length} projet(s) contenant vos missions`
+        }
         actions={actions}
       />
 
       <div className="content-body">
-        {profile?.role === "employe" && notifications && notifications.length > 0 && (
-          <div style={{ marginBottom: "20px", padding: "12px 14px", border: "1px solid var(--mist-line)", borderRadius: "8px", background: "var(--mist)" }}>
-            <strong style={{ fontSize: "13px" }}>Nouvelles missions</strong>
-            {notifications.filter((notification) => !notification.readAt).map((notification) => (
-              <div key={notification._id} style={{ fontSize: "12.5px", color: "var(--slate)", marginTop: "5px" }}>
-                {notification.message}
-              </div>
-            ))}
+        {projects === undefined ? (
+          <div style={{ padding: "40px 0", textAlign: "center", color: "var(--slate)" }}>
+            Chargement des projets...
           </div>
+        ) : activeProjects.length === 0 ? (
+          <div style={{ padding: "40px 0", textAlign: "center", color: "var(--slate)" }}>
+            {canManage
+              ? "Aucun projet. Cliquez sur 'Nouveau projet' pour commencer."
+              : "Aucune mission ne vous est attribuée pour l'instant."}
+          </div>
+        ) : (
+          <ProjectGrid
+            projects={activeProjects as any}
+            onSelectProject={(id) => setSelectedId(id)}
+          />
         )}
-        <ProjectGrid
-          projects={activeProjects as any}
-          onSelectProject={(id) => setSelectedId(id)}
-        />
       </div>
 
       <ProjectDrawer
-        project={activeProject as any}
+        project={selectedProject as any}
         onClose={() => setSelectedId(null)}
         onAddTask={handleAddTask}
         onUpdateTaskProgress={handleUpdateTaskProgress}
         onDeleteTask={handleDeleteTask}
         canManage={canManage}
-        canUpdateProgress={!!profile}
-        employees={(employees ?? []) as any}
       />
 
-      <AddProjectDrawer
-        isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        onSubmit={handleCreateProject}
-      />
+      {canManage && (
+        <AddProjectDrawer
+          isOpen={isAddOpen}
+          onClose={() => setIsAddOpen(false)}
+          onSubmit={handleCreateProject}
+        />
+      )}
     </>
   );
 }

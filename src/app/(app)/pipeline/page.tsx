@@ -6,15 +6,14 @@ import { KanbanBoard } from "@/components/pipeline/KanbanBoard";
 import { ProspectDrawer } from "@/components/pipeline/ProspectDrawer";
 import { AddProspectDrawer } from "@/components/pipeline/AddProspectDrawer";
 import { Button } from "@/components/ui/Button";
-import { useConvexAuth, useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Plus } from "lucide-react";
 
 export default function PipelinePage() {
-  const { isAuthenticated } = useConvexAuth();
+  const prospects = useQuery(api.prospects.list);
   const profile = useQuery(api.profiles.current);
-  const canManage = profile?.role === "admin" || profile?.role === "ceo";
-  const prospects = useQuery(api.prospects.list, isAuthenticated && canManage ? {} : "skip");
+
   const createProspect = useMutation(api.prospects.create);
   const moveStage = useMutation(api.prospects.moveStage);
   const addNote = useMutation(api.prospects.addNote);
@@ -24,13 +23,11 @@ export default function PipelinePage() {
 
   const selectedProspect = useQuery(
     api.prospects.getById,
-    selectedId && prospects?.some((prospect) => prospect._id === selectedId)
-      ? { id: selectedId as any }
-      : "skip"
+    selectedId ? { id: selectedId as any } : "skip"
   );
 
-  const activeProspects = prospects ?? [];
-  const activeProspect = selectedProspect ?? null;
+  const activeProspects = prospects || [];
+  const canManage = profile?.role === "ceo" || profile?.role === "admin";
 
   const handleCreate = async (data: any) => {
     try {
@@ -66,32 +63,38 @@ export default function PipelinePage() {
     <>
       <Header
         title="Pipeline commercial"
-        subtitle={`${activeProspects.length} prospects actifs`}
+        subtitle={`${activeProspects.length} prospects enregistrés`}
         actions={actions}
       />
 
       <div className="content-body">
-        <KanbanBoard
-          prospects={activeProspects as any}
-          onSelectProspect={(id) => setSelectedId(id)}
-          onMoveStage={handleMove}
-          canEdit={canManage}
-        />
+        {prospects === undefined ? (
+          <div style={{ padding: "40px 0", textAlign: "center", color: "var(--slate)" }}>
+            Chargement des prospects...
+          </div>
+        ) : (
+          <KanbanBoard
+            prospects={activeProspects as any}
+            onSelectProspect={(id) => setSelectedId(id)}
+            onMoveStage={handleMove}
+          />
+        )}
       </div>
 
       <ProspectDrawer
-        prospect={activeProspect as any}
+        prospect={selectedProspect as any}
         onClose={() => setSelectedId(null)}
         onMoveStage={handleMove}
         onAddNote={handleAddNote}
-        canEdit={canManage}
       />
 
-      <AddProspectDrawer
-        isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        onSubmit={handleCreate}
-      />
+      {canManage && (
+        <AddProspectDrawer
+          isOpen={isAddOpen}
+          onClose={() => setIsAddOpen(false)}
+          onSubmit={handleCreate}
+        />
+      )}
     </>
   );
 }

@@ -8,7 +8,10 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { TaskItem } from "./TaskItem";
 import { formatDate, todayISO } from "@/lib/utils";
 import { TEAM_ROLES } from "@/lib/constants";
-import { motion, AnimatePresence } from "motion/react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { AnimatePresence } from "motion/react";
+import { Plus } from "lucide-react";
 
 interface Task {
   _id: string;
@@ -16,13 +19,8 @@ interface Task {
   priorite: string;
   echeance: string;
   assigne?: string;
+  assigneId?: string;
   progression: number;
-}
-
-interface EmployeeOption {
-  _id: string;
-  nom: string;
-  initials: string;
 }
 
 interface ProjectDetail {
@@ -41,9 +39,7 @@ interface ProjectDrawerProps {
   onAddTask: (projectId: string, task: { titre: string; priorite: string; echeance: string; assigneId: string }) => void;
   onUpdateTaskProgress: (taskId: string, progress: number) => void;
   onDeleteTask: (taskId: string) => void;
-  canManage: boolean;
-  canUpdateProgress: boolean;
-  employees: EmployeeOption[];
+  canManage?: boolean;
 }
 
 export function ProjectDrawer({
@@ -52,16 +48,16 @@ export function ProjectDrawer({
   onAddTask,
   onUpdateTaskProgress,
   onDeleteTask,
-  canManage,
-  canUpdateProgress,
-  employees,
+  canManage = true,
 }: ProjectDrawerProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [taskTitre, setTaskTitre] = useState("");
   const [taskPriorite, setTaskPriorite] = useState("moyenne");
   const [taskEcheance, setTaskEcheance] = useState(todayISO());
-  const [taskAssigneId, setTaskAssigneId] = useState("");
+  const [taskAssigneId, setTaskAssigneId] = useState<string>("");
   const [err, setErr] = useState(false);
+
+  const employees = useQuery(api.employees.list);
 
   if (!project) return null;
 
@@ -72,7 +68,7 @@ export function ProjectDrawer({
 
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!taskTitre.trim()) {
+    if (!taskTitre.trim() || !taskAssigneId) {
       setErr(true);
       return;
     }
@@ -80,9 +76,10 @@ export function ProjectDrawer({
       titre: taskTitre.trim(),
       priorite: taskPriorite,
       echeance: taskEcheance || todayISO(),
-      assigneId: taskAssigneId,
+      assigneId: taskAssigneId as any,
     });
     setTaskTitre("");
+    setTaskAssigneId("");
     setErr(false);
     setShowAddForm(false);
   };
@@ -132,7 +129,7 @@ export function ProjectDrawer({
                 key={initials}
                 className="avatar"
                 style={{ width: "24px", height: "24px", fontSize: "10px" }}
-                title={TEAM_ROLES[initials] || ""}
+                title={TEAM_ROLES[initials] || initials}
               >
                 {initials}
               </div>
@@ -158,7 +155,7 @@ export function ProjectDrawer({
                 color: "var(--slate)",
               }}
             >
-              Tâches ({tasks.length})
+              Tâches & Missions ({tasks.length})
             </p>
           </div>
 
@@ -171,7 +168,7 @@ export function ProjectDrawer({
                 textAlign: "center",
               }}
             >
-              Aucune tâche pour l'instant.
+              Aucune tâche attribuable.
             </div>
           ) : (
             <AnimatePresence>
@@ -182,7 +179,6 @@ export function ProjectDrawer({
                   onUpdateProgress={onUpdateTaskProgress}
                   onDelete={onDeleteTask}
                   canDelete={canManage}
-                  canUpdateProgress={canUpdateProgress}
                 />
               ))}
             </AnimatePresence>
@@ -202,9 +198,13 @@ export function ProjectDrawer({
                 textAlign: "center",
                 cursor: "pointer",
                 marginTop: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
               }}
             >
-              + Ajouter une tâche
+              <Plus size={14} /> Attribuer une nouvelle mission
             </button>
           ) : (
             <form
@@ -218,17 +218,35 @@ export function ProjectDrawer({
               }}
             >
               <div className="field">
-                <label>Titre de la tâche *</label>
+                <label>Nom de la mission *</label>
                 <input
                   type="text"
                   placeholder="Ex : Intégrer la page d'accueil"
                   value={taskTitre}
                   onChange={(e) => {
                     setTaskTitre(e.target.value);
-                    if (e.target.value.trim()) setErr(false);
+                    if (e.target.value.trim() && taskAssigneId) setErr(false);
                   }}
                 />
-                {err && <div className="field-err">Le titre est requis.</div>}
+              </div>
+
+              <div className="field">
+                <label>Attribuer à un employé *</label>
+                <select
+                  value={taskAssigneId}
+                  onChange={(e) => {
+                    setTaskAssigneId(e.target.value);
+                    if (taskTitre.trim() && e.target.value) setErr(false);
+                  }}
+                >
+                  <option value="">Sélectionner un employé...</option>
+                  {(employees || []).map((emp) => (
+                    <option key={emp._id} value={emp._id}>
+                      {emp.nom} ({emp.poste || emp.departement})
+                    </option>
+                  ))}
+                </select>
+                {err && <div className="field-err">Le nom et l'employé sont requis.</div>}
               </div>
 
               <div style={{ display: "flex", gap: "10px" }}>
@@ -253,22 +271,6 @@ export function ProjectDrawer({
                 </div>
               </div>
 
-              <div className="field">
-                <label>Assigné *</label>
-                <select
-                  value={taskAssigneId}
-                  onChange={(e) => setTaskAssigneId(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>Sélectionner un employé</option>
-                  {employees.map((employee) => (
-                    <option key={employee._id} value={employee._id}>
-                      {employee.nom} ({employee.initials})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
                 <Button
                   type="button"
@@ -279,7 +281,7 @@ export function ProjectDrawer({
                   Annuler
                 </Button>
                 <Button type="submit" variant="primary" style={{ flex: 1 }}>
-                  Ajouter
+                  Attribuer
                 </Button>
               </div>
             </form>

@@ -2,11 +2,13 @@
 
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/Button";
 
 export function SignInForm() {
   const { signIn } = useAuthActions();
+  const router = useRouter();
   const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,6 +22,7 @@ export function SignInForm() {
 
     try {
       await signIn("password", formData);
+      router.replace("/dashboard");
     } catch (err: any) {
       setError(err.message || "Échec de l'authentification. Vérifiez vos identifiants.");
     } finally {

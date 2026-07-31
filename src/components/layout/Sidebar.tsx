@@ -4,8 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { useEffect } from "react";
+import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { 
   LayoutDashboard, 
@@ -20,26 +19,27 @@ import {
 export function Sidebar() {
   const pathname = usePathname();
   const { signOut } = useAuthActions();
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  const ensureCurrentUser = useMutation(api.profiles.ensureCurrentUser);
   const profile = useQuery(api.profiles.current);
-
-  useEffect(() => {
-    if (isLoading || !isAuthenticated || profile !== null) return;
-    if (profile === null) void ensureCurrentUser();
-  }, [ensureCurrentUser, isAuthenticated, isLoading, profile]);
 
   const isCeo = profile?.role === "ceo";
   const isAdmin = profile?.role === "admin";
   const canManage = isCeo || isAdmin;
 
+  const roleTitle = isCeo
+    ? "CEO (Direction)"
+    : isAdmin
+    ? "Administrateur"
+    : "Employé";
+
+  const avatarInitials = isCeo ? "CE" : isAdmin ? "AD" : "EM";
+
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, enabled: true },
     { href: "/pipeline", label: "Pipeline", icon: GitPullRequest, enabled: canManage },
-    { href: "/projets", label: "Projets", icon: FolderKanban, enabled: true },
+    { href: "/projets", label: "Projets / Missions", icon: FolderKanban, enabled: true },
     { href: "/equipe", label: "Équipe", icon: Users, enabled: canManage },
-    { href: "/finance", label: "Finance (Bientôt)", icon: Wallet, enabled: false },
-    { href: "/documents", label: "Documents (Bientôt)", icon: FileText, enabled: false },
+    { href: "/finance", label: "Finance (CEO)", icon: Wallet, enabled: false },
+    { href: "/documents", label: "Documents", icon: FileText, enabled: false },
   ];
 
   return (
@@ -54,12 +54,7 @@ export function Sidebar() {
             const isActive = pathname.startsWith(item.href);
 
             if (!item.enabled) {
-              return (
-                <div key={item.href} className="sidebar-link sidebar-disabled">
-                  <Icon size={18} />
-                  <span>{item.label}</span>
-                </div>
-              );
+              return null; // Completely hide restricted pages for employees
             }
 
             return (
@@ -93,17 +88,17 @@ export function Sidebar() {
 
       <div className="sidebar-user">
         <div className="user-info">
-            <div className="avatar">{isCeo ? "CE" : isAdmin ? "AD" : "EM"}</div>
+          <div className="avatar">{avatarInitials}</div>
           <div>
-            <div style={{ fontSize: "13px", fontWeight: 600 }}>{isCeo ? "CEO" : isAdmin ? "Administrateur" : "Employé"}</div>
-            <div style={{ fontSize: "11px", color: "var(--slate)" }}>{isCeo ? "Accès financier et gestion" : isAdmin ? "Gestion équipe et projets" : "Missions attribuées"}</div>
+            <div style={{ fontSize: "13px", fontWeight: 600 }}>{profile?.name || "Utilisateur"}</div>
+            <div style={{ fontSize: "11px", color: "var(--slate)" }}>{roleTitle}</div>
           </div>
         </div>
         <button
           onClick={() => void signOut()}
           className="icon-btn"
           title="Se déconnecter"
-          style={{ cursor: "pointer" }}
+          style={{ cursor: "pointer", color: "var(--danger)" }}
         >
           <LogOut size={16} />
         </button>

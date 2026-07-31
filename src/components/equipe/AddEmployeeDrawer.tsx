@@ -8,7 +8,6 @@ import { todayISO } from "@/lib/utils";
 interface AddEmployeeDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  canAssignAdmin: boolean;
   onSubmit: (data: {
     nom: string;
     email: string;
@@ -20,9 +19,10 @@ interface AddEmployeeDrawerProps {
     competences: string[];
     salaire: number | null;
   }) => void;
+  isCeo?: boolean;
 }
 
-export function AddEmployeeDrawer({ isOpen, onClose, canAssignAdmin, onSubmit }: AddEmployeeDrawerProps) {
+export function AddEmployeeDrawer({ isOpen, onClose, onSubmit, isCeo = false }: AddEmployeeDrawerProps) {
   const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "employe">("employe");
@@ -32,14 +32,15 @@ export function AddEmployeeDrawer({ isOpen, onClose, canAssignAdmin, onSubmit }:
   const [dispo, setDispo] = useState("temps_plein");
   const [competencesText, setCompetencesText] = useState("");
   const [salaireText, setSalaireText] = useState("");
-  const [err, setErr] = useState(false);
+  const [err, setErr] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nom.trim() || !email.trim()) {
-      setErr(true);
+      setErr("Le nom et l'email sont requis.");
       return;
     }
+
     const competences = competencesText
       .split(",")
       .map((s) => s.trim())
@@ -61,10 +62,11 @@ export function AddEmployeeDrawer({ isOpen, onClose, canAssignAdmin, onSubmit }:
 
     setNom("");
     setEmail("");
+    setRole("employe");
     setPoste("");
     setCompetencesText("");
     setSalaireText("");
-    setErr(false);
+    setErr("");
     onClose();
   };
 
@@ -73,7 +75,7 @@ export function AddEmployeeDrawer({ isOpen, onClose, canAssignAdmin, onSubmit }:
       isOpen={isOpen}
       onClose={onClose}
       title="Nouvel employé"
-      subtitle="Ajout à l'annuaire d'entreprise"
+      subtitle="Ajout à l'annuaire et attribution du rôle"
     >
       <form onSubmit={handleSubmit}>
         <div className="field">
@@ -84,32 +86,33 @@ export function AddEmployeeDrawer({ isOpen, onClose, canAssignAdmin, onSubmit }:
             value={nom}
             onChange={(e) => {
               setNom(e.target.value);
-              if (e.target.value.trim()) setErr(false);
+              if (e.target.value.trim() && email.trim()) setErr("");
             }}
           />
-          {err && <div className="field-err">Le nom est requis.</div>}
         </div>
 
         <div className="field">
-          <label>Adresse e-mail *</label>
+          <label>Adresse Email * (utilisée pour la connexion)</label>
           <input
             type="email"
-            placeholder="prenom.nom@onlice.cm"
+            placeholder="grace.ateba@onlice.cm"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
-              if (e.target.value.trim()) setErr(false);
+              if (nom.trim() && e.target.value.trim()) setErr("");
             }}
-            required
           />
-          {err && <div className="field-err">Le nom et l'e-mail sont requis.</div>}
+          {err && <div className="field-err">{err}</div>}
         </div>
 
         <div className="field">
-          <label>Rôle et accès</label>
-          <select value={role} onChange={(e) => setRole(e.target.value as "admin" | "employe")}>
-            <option value="employe">Employé - missions personnelles</option>
-            {canAssignAdmin && <option value="admin">Administrateur - gestion équipe et projets</option>}
+          <label>Rôle et Droits d'accès</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as any)}
+          >
+            <option value="employe">Employé (Accès restreint aux tâches attribuées)</option>
+            {isCeo && <option value="admin">Administrateur (Gestion des projets & équipes)</option>}
           </select>
         </div>
 
@@ -172,15 +175,17 @@ export function AddEmployeeDrawer({ isOpen, onClose, canAssignAdmin, onSubmit }:
           />
         </div>
 
-        <div className="field">
-          <label>Salaire (XAF, optionnel)</label>
-          <input
-            type="number"
-            placeholder="Ex : 300000"
-            value={salaireText}
-            onChange={(e) => setSalaireText(e.target.value)}
-          />
-        </div>
+        {isCeo && (
+          <div className="field">
+            <label>Salaire (XAF, réservé au CEO)</label>
+            <input
+              type="number"
+              placeholder="Ex : 300000"
+              value={salaireText}
+              onChange={(e) => setSalaireText(e.target.value)}
+            />
+          </div>
+        )}
 
         <Button variant="primary" type="submit" style={{ width: "100%", marginTop: "12px" }}>
           Ajouter à l'équipe

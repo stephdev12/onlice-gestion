@@ -437,9 +437,26 @@ button, input, select, textarea {
     width: 100%;
   }
 
-  .sidebar-logo,
-  .sidebar-user {
+  .sidebar-logo {
     display: none;
+  }
+
+  .sidebar-user {
+    display: flex;
+    flex: 0 0 auto;
+    padding: 0;
+    border: 0;
+  }
+
+  .sidebar-user .user-info {
+    display: none;
+  }
+
+  .sidebar-user .icon-btn {
+    min-width: 48px;
+    min-height: 48px;
+    display: grid;
+    place-items: center;
   }
 
   .sidebar-nav {
