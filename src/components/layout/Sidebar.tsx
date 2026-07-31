@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useMutation, useQuery } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useEffect } from "react";
 import { api } from "../../../convex/_generated/api";
 import { 
@@ -20,13 +20,14 @@ import {
 export function Sidebar() {
   const pathname = usePathname();
   const { signOut } = useAuthActions();
+  const { isAuthenticated, isLoading } = useConvexAuth();
   const ensureCurrentUser = useMutation(api.profiles.ensureCurrentUser);
   const profile = useQuery(api.profiles.current);
 
   useEffect(() => {
-    if (profile === undefined) return;
+    if (isLoading || !isAuthenticated || profile !== null) return;
     if (profile === null) void ensureCurrentUser();
-  }, [ensureCurrentUser, profile]);
+  }, [ensureCurrentUser, isAuthenticated, isLoading, profile]);
 
   const isCeo = profile?.role === "ceo";
   const isAdmin = profile?.role === "admin";

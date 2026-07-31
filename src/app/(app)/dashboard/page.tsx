@@ -10,15 +10,16 @@ import { TopClients } from "@/components/dashboard/TopClients";
 import { RepPerformance } from "@/components/dashboard/RepPerformance";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { useQuery, useMutation } from "convex/react";
+import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<"mois" | "trimestre">("mois");
+  const { isAuthenticated } = useConvexAuth();
   const profile = useQuery(api.profiles.current);
   const stats = useQuery(
     api.dashboard.stats,
-    profile ? { period } : "skip"
+    isAuthenticated && profile ? { period } : "skip"
   );
   const seed = useMutation(api.seed.seedAll);
   const [seeding, setSeeding] = useState(false);
