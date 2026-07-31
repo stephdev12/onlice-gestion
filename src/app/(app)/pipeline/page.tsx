@@ -6,14 +6,15 @@ import { KanbanBoard } from "@/components/pipeline/KanbanBoard";
 import { ProspectDrawer } from "@/components/pipeline/ProspectDrawer";
 import { AddProspectDrawer } from "@/components/pipeline/AddProspectDrawer";
 import { Button } from "@/components/ui/Button";
-import { useQuery, useMutation } from "convex/react";
+import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Plus } from "lucide-react";
 
 export default function PipelinePage() {
+  const { isAuthenticated } = useConvexAuth();
   const profile = useQuery(api.profiles.current);
   const canManage = profile?.role === "admin" || profile?.role === "ceo";
-  const prospects = useQuery(api.prospects.list, canManage ? {} : "skip");
+  const prospects = useQuery(api.prospects.list, isAuthenticated && canManage ? {} : "skip");
   const createProspect = useMutation(api.prospects.create);
   const moveStage = useMutation(api.prospects.moveStage);
   const addNote = useMutation(api.prospects.addNote);

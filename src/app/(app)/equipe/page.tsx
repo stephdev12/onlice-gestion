@@ -7,15 +7,16 @@ import { PendingRequests } from "@/components/equipe/PendingRequests";
 import { EmployeeDrawer } from "@/components/equipe/EmployeeDrawer";
 import { AddEmployeeDrawer } from "@/components/equipe/AddEmployeeDrawer";
 import { Button } from "@/components/ui/Button";
-import { useQuery, useMutation } from "convex/react";
+import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Plus } from "lucide-react";
 
 export default function EquipePage() {
+  const { isAuthenticated } = useConvexAuth();
   const profile = useQuery(api.profiles.current);
   const canManage = profile?.role === "admin" || profile?.role === "ceo";
-  const employees = useQuery(api.employees.list, canManage ? {} : "skip");
-  const pendingRequests = useQuery(api.employees.pendingDemandes, canManage ? {} : "skip");
+  const employees = useQuery(api.employees.list, isAuthenticated && canManage ? {} : "skip");
+  const pendingRequests = useQuery(api.employees.pendingDemandes, isAuthenticated && canManage ? {} : "skip");
 
   const createEmployee = useMutation(api.employees.create);
   const updateDemandeStatus = useMutation(api.employees.updateDemandeStatus);

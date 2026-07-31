@@ -6,18 +6,22 @@ import { ProjectGrid } from "@/components/projets/ProjectGrid";
 import { ProjectDrawer } from "@/components/projets/ProjectDrawer";
 import { AddProjectDrawer } from "@/components/projets/AddProjectDrawer";
 import { Button } from "@/components/ui/Button";
-import { useQuery, useMutation } from "convex/react";
+import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Plus } from "lucide-react";
 
 export default function ProjetsPage() {
-  const projects = useQuery(api.projects.list);
+  const { isAuthenticated } = useConvexAuth();
   const profile = useQuery(api.profiles.current);
+  const projects = useQuery(api.projects.list, isAuthenticated && profile ? {} : "skip");
   const employees = useQuery(
     api.employees.list,
-    profile?.role === "admin" || profile?.role === "ceo" ? {} : "skip"
+    isAuthenticated && (profile?.role === "admin" || profile?.role === "ceo") ? {} : "skip"
   );
-  const notifications = useQuery(api.projects.notifications);
+  const notifications = useQuery(
+    api.projects.notifications,
+    isAuthenticated && profile?.role === "employe" ? {} : "skip"
+  );
   const createProject = useMutation(api.projects.create);
   const addTask = useMutation(api.projects.addTask);
   const updateTaskProgress = useMutation(api.projects.updateTaskProgress);

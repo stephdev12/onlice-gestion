@@ -3,12 +3,6 @@
 import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { KpiCard } from "@/components/dashboard/KpiCard";
-import { RevenueChart } from "@/components/dashboard/RevenueChart";
-import { WorkloadPanel } from "@/components/dashboard/WorkloadPanel";
-import { AlertPanel } from "@/components/dashboard/AlertPanel";
-import { TopClients } from "@/components/dashboard/TopClients";
-import { RepPerformance } from "@/components/dashboard/RepPerformance";
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
@@ -84,8 +78,6 @@ export default function DashboardPage() {
     </div>
   ) : null;
 
-  const isCeo = profile?.role === "ceo";
-
   return (
     <>
       <Header
@@ -104,137 +96,24 @@ export default function DashboardPage() {
             marginBottom: "28px",
           }}
         >
-          {isCeo && <KpiCard
-            label="Chiffre d'affaires"
-            value={stats?.ca ?? 0}
-            unit="XAF"
-            trend={stats?.caTrend ?? ""}
-            trendDirection="up"
-          />}
-          {isCeo && <KpiCard
-            label="Trésorerie"
-            value={stats?.tresorerie ?? 0}
-            unit="XAF"
-            trend={stats?.tresorerieTrend ?? ""}
-            trendDirection="down"
-          />}
           <KpiCard
             label="Prospects actifs"
-            value={stats?.prospectsActifs ?? 9}
+            value={stats?.prospectsActifs ?? 0}
             sub="dans le pipeline commercial"
           />
           <KpiCard
             label="Projets"
-            value={stats?.projetsTotal ?? 3}
+            value={stats?.projetsTotal ?? 0}
             unit="en cours"
-            trend="1 en retard"
+            trend={`${stats?.projetsRetard ?? 0} en retard`}
             trendDirection="down"
           />
-          {isCeo && <KpiCard
-            label="Devis envoyés"
-            value={stats?.devisCount ?? 0}
-            sub={stats?.devisSub ?? ""}
-          />}
           <KpiCard
             label="Équipe"
-            value={stats?.employesTotal ?? 5}
+            value={stats?.employesTotal ?? 0}
             unit="employés"
-            sub={`${stats?.demandesEnAttente ?? 2} demandes en attente`}
+            sub={`${stats?.demandesEnAttente ?? 0} demandes en attente`}
           />
-        </div>
-
-        {/* Dashboard Columns */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.3fr 1fr",
-            gap: "16px",
-            alignItems: "start",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {isCeo && <Card hoverEffect={false}>
-              <h3
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  color: "var(--slate)",
-                  marginBottom: "18px",
-                }}
-              >
-                Revenus vs dépenses — 6 derniers mois
-              </h3>
-              <RevenueChart />
-            </Card>}
-
-            {isCeo && <Card hoverEffect={false}>
-              <h3
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  color: "var(--slate)",
-                  marginBottom: "18px",
-                }}
-              >
-                Charge de travail par équipe
-              </h3>
-              <WorkloadPanel />
-            </Card>}
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {isCeo && <Card hoverEffect={false}>
-              <h3
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  color: "var(--slate)",
-                  marginBottom: "14px",
-                }}
-              >
-                Projets en retard
-              </h3>
-              <AlertPanel />
-            </Card>}
-
-            <Card hoverEffect={false}>
-              <h3
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  color: "var(--slate)",
-                  marginBottom: "14px",
-                }}
-              >
-                Clients les plus rentables
-              </h3>
-              <TopClients />
-            </Card>
-
-            <Card hoverEffect={false}>
-              <h3
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  color: "var(--slate)",
-                  marginBottom: "14px",
-                }}
-              >
-                Performance commerciale
-              </h3>
-              <RepPerformance />
-            </Card>
-          </div>
         </div>
       </div>
     </>

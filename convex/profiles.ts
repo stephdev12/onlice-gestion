@@ -1,6 +1,8 @@
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
+const CEO_EMAIL = "admin@onlice.com";
+
 export const ensureCurrentUser = mutation({
   args: {},
   handler: async (ctx) => {
@@ -19,13 +21,14 @@ export const ensureCurrentUser = mutation({
     }
 
     const firstProfile = await ctx.db.query("profiles").first();
+    const user = await ctx.db.get(userId);
+    const isConfiguredCeo = user?.email?.trim().toLowerCase() === CEO_EMAIL;
     const profileId = await ctx.db.insert("profiles", {
       userId,
-      role: firstProfile ? "employe" : "ceo",
+      role: isConfiguredCeo || !firstProfile ? "ceo" : "employe",
     });
 
-    const user = await ctx.db.get(userId);
-    if (firstProfile && user?.email) {
+    if (!isConfiguredCeo && firstProfile && user?.email) {
       const employee = await ctx.db
         .query("employees")
         .withIndex("by_email", (query) => query.eq("email", user.email))

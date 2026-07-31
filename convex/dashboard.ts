@@ -16,11 +16,6 @@ export const stats = query({
       .withIndex("by_statut", (q) => q.eq("statut", "en_attente"))
       .collect();
 
-    const ca = isCeo ? (period === "trimestre" ? 13150000 : 4850000) : null;
-    const caTrend = isCeo ? (period === "trimestre" ? "▲ 18% vs trimestre précédent" : "▲ 12% vs période précédente") : null;
-    const devisCount = isCeo ? (period === "trimestre" ? 5 : 2) : null;
-    const devisSub = isCeo ? (period === "trimestre" ? "mai – juillet" : "en juillet") : null;
-
     const lateProjects = projects.filter((p) => {
       // Checked if default deadline is past
       const today = new Date().toISOString().split("T")[0];
@@ -28,15 +23,9 @@ export const stats = query({
     }).length;
 
     return {
-      ca,
-      caTrend,
-      tresorerie: isCeo ? 2130000 : null,
-      tresorerieTrend: isCeo ? "▼ 4% vs mois dernier" : null,
       prospectsActifs: prospects.length,
       projetsTotal: projects.length,
-      projetsRetard: lateProjects || 1,
-      devisCount,
-      devisSub,
+      projetsRetard: lateProjects,
       employesTotal: employees.length,
       demandesEnAttente: pendingDemandes.length,
     };
