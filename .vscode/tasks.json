@@ -94,6 +94,12 @@
 			"type": "shell",
 			"command": "git add -A; git commit --amend --no-edit; git log --oneline -1",
 			"isBackground": false
+		},
+		{
+			"label": "Commit mobile drawer z-index fix",
+			"type": "shell",
+			"command": "git add -A; git commit -m 'Fix mobile drawer submit button hidden behind bottom nav bar'",
+			"isBackground": false
 		}
 	]
 }

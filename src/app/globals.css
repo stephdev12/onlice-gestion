@@ -377,7 +377,7 @@ button, input, select, textarea {
   inset: 0;
   background: rgba(13, 22, 29, 0.4);
   backdrop-filter: blur(2px);
-  z-index: 40;
+  z-index: 65;
 }
 
 .drawer {
@@ -389,7 +389,7 @@ button, input, select, textarea {
   max-width: 94vw;
   background: var(--paper);
   box-shadow: var(--shadow-lg);
-  z-index: 50;
+  z-index: 70;
   display: flex;
   flex-direction: column;
 }
@@ -580,5 +580,9 @@ button, input, select, textarea {
   .drawer-body {
     padding-left: 16px;
     padding-right: 16px;
+  }
+
+  .drawer-body {
+    padding-bottom: max(24px, calc(env(safe-area-inset-bottom) + 24px));
   }
 }
