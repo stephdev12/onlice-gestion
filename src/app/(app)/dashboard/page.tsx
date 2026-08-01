@@ -19,6 +19,7 @@ import { Shield, Sparkles, CheckCircle2, Plus } from "lucide-react";
 export default function DashboardPage() {
   const [period, setPeriod] = useState<"mois" | "trimestre">("mois");
   const stats = useQuery(api.dashboard.stats, { period });
+  const profile = useQuery(api.profiles.current);
   const seed = useMutation(api.seed.seedAll);
   const addFinanceEntry = useMutation(api.finance.create);
   const [seeding, setSeeding] = useState(false);
@@ -105,6 +106,12 @@ export default function DashboardPage() {
         }
         actions={actions}
       />
+
+      {profile && profile.name && profile.role === "employe" && (
+        <div style={{ padding: "12px 18px", fontSize: "16px", fontWeight: 600 }}>
+          Hello "{profile.name}" !!
+        </div>
+      )}
 
       <div className="content-body">
         {/* KPI Grid - Tailored by Role */}

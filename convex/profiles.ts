@@ -133,3 +133,14 @@ export const setRole = mutation({
     }
   },
 });
+
+export const setName = mutation({
+  args: { name: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    // patch the users record so `profiles.current` can read `user?.name`
+    await ctx.db.patch(userId, { name: args.name });
+  },
+});

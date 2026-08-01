@@ -3,6 +3,8 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/Button";
 import { Eye, EyeOff } from "lucide-react";
@@ -14,6 +16,7 @@ export function SignInForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const setName = useMutation(api.profiles.setName);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -27,6 +30,17 @@ export function SignInForm() {
 
     try {
       await signIn("password", formData);
+      // if the user just created an account, set their display name from the form
+      if (flow === "signUp") {
+        const name = formData.get("name") as string | null;
+        if (name && name.trim()) {
+          try {
+            await setName({ name: name.trim() });
+          } catch (e) {
+            console.debug("Could not set profile name:", e);
+          }
+        }
+      }
       router.replace("/dashboard");
     } catch (err: any) {
       console.error("Sign-in error:", err);
@@ -68,6 +82,13 @@ export function SignInForm() {
               required
             />
           </div>
+
+          {flow === "signUp" && (
+            <div className="field">
+              <label htmlFor="name">Nom complet</label>
+              <input id="name" name="name" type="text" placeholder="Jean Dupont" required />
+            </div>
+          )}
 
           <div className="field">
             <label htmlFor="password">Mot de passe</label>

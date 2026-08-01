@@ -84,6 +84,18 @@
 			"group": "build"
 		},
 		{
+			"label": "Convex deploy",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				".\\node_modules\\convex\\bin\\main.js",
+				"deploy"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
 			"label": "Next.js production build",
 			"type": "shell",
 			"command": "cmd /c npm run build",

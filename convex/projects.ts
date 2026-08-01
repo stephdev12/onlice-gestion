@@ -293,3 +293,54 @@ export const markNotificationRead = mutation({
     await ctx.db.patch(args.id, { readAt: Date.now() });
   },
 });
+
+export const addComment = mutation({
+  args: { taskId: v.id("tasks"), text: v.string() },
+  handler: async (ctx, args) => {
+    const profile = await getCurrentProfile(ctx);
+    if (!profile) throw new Error("Unauthorized");
+
+    const employee = profile.role === "employe" ? await getCurrentEmployee(ctx) : null;
+    const user = profile.userId ? await ctx.db.get(profile.userId) : null;
+    const authorName = employee?.nom || user?.name || "Utilisateur";
+
+    const commentId = await ctx.db.insert("taskComments", {
+      taskId: args.taskId,
+      authorId: employee?._id,
+      authorName,
+      text: args.text,
+      createdAt: Date.now(),
+    });
+
+    await ctx.db.insert("taskActivity", {
+      taskId: args.taskId,
+      type: "comment",
+      payload: args.text,
+      createdAt: Date.now(),
+    });
+
+    return commentId;
+  },
+});
+
+export const commentsForTask = query({
+  args: { taskId: v.id("tasks") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("taskComments")
+      .withIndex("by_task", (q) => q.eq("taskId", args.taskId as never))
+      .order("asc")
+      .collect();
+  },
+});
+
+export const activityForTask = query({
+  args: { taskId: v.id("tasks") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("taskActivity")
+      .withIndex("by_task", (q) => q.eq("taskId", args.taskId as never))
+      .order("asc")
+      .collect();
+  },
+});

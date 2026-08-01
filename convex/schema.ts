@@ -59,6 +59,9 @@ export default defineSchema({
     projectId: v.id("projects"),
     titre: v.string(),
     priorite: v.string(),     // basse, moyenne, haute
+    // optional fields added for filters and sprints
+    type: v.optional(v.string()),
+    sprint: v.optional(v.string()),
     importance: v.optional(
       v.union(
         v.literal("critique"),
@@ -79,6 +82,23 @@ export default defineSchema({
   })
     .index("by_project", ["projectId"])
     .index("by_assigneId", ["assigneId"]),
+
+  // Comments attached to tasks (activity / timeline)
+  taskComments: defineTable({
+    taskId: v.id("tasks"),
+    authorId: v.optional(v.id("employees")),
+    authorName: v.string(),
+    text: v.string(),
+    createdAt: v.number(),
+  }).index("by_task", ["taskId"]),
+
+  // Generic task activity entries (status changes, system notes)
+  taskActivity: defineTable({
+    taskId: v.id("tasks"),
+    type: v.string(),
+    payload: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_task", ["taskId"]),
 
   // Employés / Équipe
   employees: defineTable({
