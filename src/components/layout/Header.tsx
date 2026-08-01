@@ -6,6 +6,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { LogOut, Bell, Check, Sparkles } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
+import { ThemeToggle } from "./ThemeToggle";
+import { InstallAppButton } from "./InstallAppButton";
 
 interface HeaderProps {
   title: string;
@@ -48,6 +50,8 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
 
         <div className="headbar-actions">
           {actions}
+          <InstallAppButton />
+          <ThemeToggle />
 
           {/* Notifications Button */}
           <button

@@ -30,3 +30,18 @@ export const TEAM_ROLES: Record<string, string> = {
   RT: 'Développeur Front',
   JN: 'Développeur Back'
 };
+
+export const PROJECT_TYPE_LABELS: Record<string, string> = {
+  dev: 'Projet Dev',
+  marketing_digital: 'Projet Marketing Digital',
+  design: 'Projet Design',
+  campagne_marketing: 'Campagne Marketing',
+  rapide: 'Projet Rapide'
+};
+
+export const REPORT_MOOD_LABELS: Record<string, string> = {
+  excellent: 'Excellent',
+  bon: 'Bon',
+  moyen: 'Moyen',
+  difficile: 'Difficile'
+};

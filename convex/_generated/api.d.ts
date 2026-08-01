@@ -17,6 +17,7 @@ import type * as http from "../http.js";
 import type * as profiles from "../profiles.js";
 import type * as projects from "../projects.js";
 import type * as prospects from "../prospects.js";
+import type * as reports from "../reports.js";
 import type * as seed from "../seed.js";
 
 import type {
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   profiles: typeof profiles;
   projects: typeof projects;
   prospects: typeof prospects;
+  reports: typeof reports;
   seed: typeof seed;
 }>;
 

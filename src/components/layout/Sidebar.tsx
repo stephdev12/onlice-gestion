@@ -12,7 +12,8 @@ import {
   FolderKanban, 
   Users, 
   Wallet, 
-  FileText, 
+  FileText,
+  ClipboardList,
   LogOut 
 } from "lucide-react";
 
@@ -38,7 +39,8 @@ export function Sidebar() {
     { href: "/pipeline", label: "Pipeline", icon: GitPullRequest, enabled: canManage },
     { href: "/projets", label: "Projets / Missions", icon: FolderKanban, enabled: true },
     { href: "/equipe", label: "Équipe", icon: Users, enabled: canManage },
-    { href: "/finance", label: "Finance (CEO)", icon: Wallet, enabled: false },
+    { href: "/rapports", label: "Rapports", icon: ClipboardList, enabled: true },
+    { href: "/finance", label: "Finance (CEO)", icon: Wallet, enabled: isCeo },
     { href: "/documents", label: "Documents", icon: FileText, enabled: false },
   ];
 

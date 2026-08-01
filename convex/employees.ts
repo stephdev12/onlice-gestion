@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getCurrentProfile, requireAdmin } from "./access";
+import { getCurrentEmployee, getCurrentProfile, requireAdmin } from "./access";
 
 export const list = query({
   args: {},
@@ -193,22 +193,51 @@ export const createDemande = mutation({
 
 export const submitRapport = mutation({
   args: {
-    employeId: v.id("employees"),
+    employeId: v.optional(v.id("employees")),
+    periodeType: v.optional(v.union(v.literal("journalier"), v.literal("hebdomadaire"))),
     semaine: v.string(),
     realisations: v.string(),
     problemes: v.optional(v.string()),
     besoins: v.optional(v.string()),
     objectifs: v.optional(v.string()),
+    previsions: v.optional(v.string()),
+    humeur: v.optional(v.union(v.literal("excellent"), v.literal("bon"), v.literal("moyen"), v.literal("difficile"))),
   },
   handler: async (ctx, args) => {
-    await requireAdmin(ctx);
+    const profile = await getCurrentProfile(ctx);
+    if (!profile) {
+      throw new Error("Unauthorized");
+    }
+
+    let employeId = args.employeId;
+    if (profile.role === "employe") {
+      const employee = await getCurrentEmployee(ctx);
+      if (!employee) {
+        throw new Error("Employee not found");
+      }
+      employeId = employee._id;
+    } else {
+      await requireAdmin(ctx);
+      if (!employeId) {
+        throw new Error("Employee is required");
+      }
+    }
+
+    if (!employeId) {
+      throw new Error("Employee is required");
+    }
+
     return await ctx.db.insert("rapports", {
-      employeId: args.employeId,
+      employeId,
+      periodeType: args.periodeType || "hebdomadaire",
       semaine: args.semaine,
       realisations: args.realisations,
       problemes: args.problemes,
       besoins: args.besoins,
       objectifs: args.objectifs,
+      previsions: args.previsions,
+      humeur: args.humeur,
+      createdAt: Date.now(),
       statut: "a_valider",
     });
   },
@@ -219,5 +248,56 @@ export const validateRapport = mutation({
   handler: async (ctx, args) => {
     await requireAdmin(ctx);
     await ctx.db.patch(args.id, { statut: "valide" });
+  },
+});
+
+export const myRapports = query({
+  args: {},
+  handler: async (ctx) => {
+    const profile = await getCurrentProfile(ctx);
+    if (!profile) return [];
+
+    if (profile.role === "ceo" || profile.role === "admin") {
+      return await ctx.db
+        .query("rapports")
+        .withIndex("by_statut", (q) => q.eq("statut", "a_valider"))
+        .order("desc")
+        .take(100);
+    }
+
+    const employee = await getCurrentEmployee(ctx);
+    if (!employee) return [];
+
+    return await ctx.db
+      .query("rapports")
+      .withIndex("by_employe", (q) => q.eq("employeId", employee._id))
+      .order("desc")
+      .take(50);
+  },
+});
+
+export const reportsForReview = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+    const reports = await ctx.db
+      .query("rapports")
+      .withIndex("by_statut", (q) => q.eq("statut", "a_valider"))
+      .order("desc")
+      .take(100);
+
+    const enriched = await Promise.all(
+      reports.map(async (report) => {
+        const employee = await ctx.db.get(report.employeId);
+        return {
+          ...report,
+          employeNom: employee?.nom || "Inconnu",
+          employeInitials: employee?.initials || "??",
+          employePoste: employee?.poste || employee?.departement || "Employe",
+        };
+      })
+    );
+
+    return enriched;
   },
 });

@@ -40,6 +40,15 @@ export default defineSchema({
     titre: v.string(),
     client: v.optional(v.string()),
     description: v.optional(v.string()),
+    projectType: v.optional(
+      v.union(
+        v.literal("dev"),
+        v.literal("marketing_digital"),
+        v.literal("design"),
+        v.literal("campagne_marketing"),
+        v.literal("rapide")
+      )
+    ),
     echeanceDefaut: v.string(),
     equipe: v.array(v.string()),
     createdBy: v.optional(v.id("users")),
@@ -50,9 +59,22 @@ export default defineSchema({
     projectId: v.id("projects"),
     titre: v.string(),
     priorite: v.string(),     // basse, moyenne, haute
+    importance: v.optional(
+      v.union(
+        v.literal("critique"),
+        v.literal("haute"),
+        v.literal("moyenne"),
+        v.literal("basse")
+      )
+    ),
     echeance: v.string(),
     assigne: v.optional(v.string()),
     assigneId: v.optional(v.id("employees")),
+    statut: v.optional(v.union(v.literal("attendu"), v.literal("encours"), v.literal("termine"))),
+    detailsFait: v.optional(v.string()),
+    detailsBlocage: v.optional(v.string()),
+    detailsReste: v.optional(v.string()),
+    notes: v.optional(v.string()),
     progression: v.number(),  // 0-100
   })
     .index("by_project", ["projectId"])
@@ -114,11 +136,24 @@ export default defineSchema({
   // Rapports hebdomadaires
   rapports: defineTable({
     employeId: v.id("employees"),
+    periodeType: v.optional(v.union(v.literal("journalier"), v.literal("hebdomadaire"))),
     semaine: v.string(),
     realisations: v.string(),
     problemes: v.optional(v.string()),
     besoins: v.optional(v.string()),
     objectifs: v.optional(v.string()),
+    previsions: v.optional(v.string()),
+    humeur: v.optional(
+      v.union(
+        v.literal("excellent"),
+        v.literal("bon"),
+        v.literal("moyen"),
+        v.literal("difficile")
+      )
+    ),
+    createdAt: v.optional(v.number()),
     statut: v.string(),        // a_valider, valide
-  }).index("by_employe", ["employeId"]),
+  })
+    .index("by_employe", ["employeId"])
+    .index("by_statut", ["statut"]),
 });

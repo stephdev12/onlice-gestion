@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { formatDate } from "@/lib/utils";
-import { TEAM_ROLES } from "@/lib/constants";
+import { PROJECT_TYPE_LABELS, TEAM_ROLES } from "@/lib/constants";
 import { staggerContainer, fadeInUp } from "@/lib/animations";
 
 interface Task {
@@ -22,6 +22,7 @@ interface Project {
   titre: string;
   client?: string;
   description?: string;
+  projectType?: string;
   echeanceDefaut: string;
   equipe: string[];
   taches: Task[];
@@ -74,6 +75,10 @@ export function ProjectGrid({ projects, onSelectProject }: ProjectGridProps) {
               }}
             >
               {p.client || "—"}
+            </div>
+
+            <div style={{ marginBottom: "10px" }}>
+              <Badge variant="neutral">{PROJECT_TYPE_LABELS[p.projectType || "dev"] || "Projet"}</Badge>
             </div>
 
             <div style={{ marginBottom: "12px" }}>

@@ -94,6 +94,15 @@ export const create = mutation({
     titre: v.string(),
     client: v.optional(v.string()),
     description: v.optional(v.string()),
+    projectType: v.optional(
+      v.union(
+        v.literal("dev"),
+        v.literal("marketing_digital"),
+        v.literal("design"),
+        v.literal("campagne_marketing"),
+        v.literal("rapide")
+      )
+    ),
     echeanceDefaut: v.string(),
     equipe: v.array(v.string()),
   },
@@ -108,22 +117,41 @@ export const addTask = mutation({
     projectId: v.id("projects"),
     titre: v.string(),
     priorite: v.string(),
+    importance: v.optional(v.union(v.literal("critique"), v.literal("haute"), v.literal("moyenne"), v.literal("basse"))),
     echeance: v.string(),
     assigneId: v.id("employees"),
+    statut: v.optional(v.union(v.literal("attendu"), v.literal("encours"), v.literal("termine"))),
+    detailsFait: v.optional(v.string()),
+    detailsBlocage: v.optional(v.string()),
+    detailsReste: v.optional(v.string()),
+    notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     await requireAdmin(ctx);
     const employee = await ctx.db.get(args.assigneId);
     if (!employee) throw new Error("Employee not found");
 
+    const initialStatus = args.statut || "attendu";
+    const initialProgress = initialStatus === "termine" ? 100 : initialStatus === "encours" ? 40 : 0;
+
     const taskId = await ctx.db.insert("tasks", {
       projectId: args.projectId,
       titre: args.titre,
       priorite: args.priorite,
+      importance:
+        args.importance ||
+        (args.priorite === "haute" || args.priorite === "moyenne" || args.priorite === "basse"
+          ? args.priorite
+          : "moyenne"),
       echeance: args.echeance,
       assigne: employee.initials,
       assigneId: employee._id,
-      progression: 0,
+      statut: initialStatus,
+      detailsFait: args.detailsFait,
+      detailsBlocage: args.detailsBlocage,
+      detailsReste: args.detailsReste,
+      notes: args.notes,
+      progression: initialProgress,
     });
 
     await ctx.db.insert("notifications", {
@@ -156,7 +184,48 @@ export const updateTaskProgress = mutation({
         throw new Error("Unauthorized");
       }
     }
-    await ctx.db.patch(args.id, { progression: args.progression });
+    await ctx.db.patch(args.id, {
+      progression: args.progression,
+      statut: args.progression >= 100 ? "termine" : args.progression > 0 ? "encours" : "attendu",
+    });
+  },
+});
+
+export const updateTaskWorkflow = mutation({
+  args: {
+    id: v.id("tasks"),
+    statut: v.union(v.literal("attendu"), v.literal("encours"), v.literal("termine")),
+    detailsFait: v.optional(v.string()),
+    detailsBlocage: v.optional(v.string()),
+    detailsReste: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    importance: v.optional(v.union(v.literal("critique"), v.literal("haute"), v.literal("moyenne"), v.literal("basse"))),
+  },
+  handler: async (ctx, args) => {
+    const task = await ctx.db.get(args.id);
+    if (!task) throw new Error("Task not found");
+
+    const profile = await getCurrentProfile(ctx);
+    if (!profile) throw new Error("Unauthorized");
+
+    if (profile.role === "employe") {
+      const employee = await getCurrentEmployee(ctx);
+      if (!employee || task.assigneId !== employee._id) {
+        throw new Error("Unauthorized");
+      }
+    }
+
+    const progression = args.statut === "termine" ? 100 : args.statut === "encours" ? Math.max(10, task.progression || 0) : 0;
+
+    await ctx.db.patch(args.id, {
+      statut: args.statut,
+      detailsFait: args.detailsFait,
+      detailsBlocage: args.detailsBlocage,
+      detailsReste: args.detailsReste,
+      notes: args.notes,
+      importance: args.importance,
+      progression,
+    });
   },
 });
 

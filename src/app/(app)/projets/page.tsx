@@ -13,11 +13,14 @@ import { Plus } from "lucide-react";
 export default function ProjetsPage() {
   const projects = useQuery(api.projects.list);
   const profile = useQuery(api.profiles.current);
+  const canManage = profile?.role === "ceo" || profile?.role === "admin";
 
   const createProject = useMutation(api.projects.create);
   const addTask = useMutation(api.projects.addTask);
   const updateTaskProgress = useMutation(api.projects.updateTaskProgress);
+  const updateTaskWorkflow = useMutation(api.projects.updateTaskWorkflow);
   const deleteTask = useMutation(api.projects.deleteTask);
+  const employees = useQuery(api.employees.list, canManage ? {} : "skip");
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -28,7 +31,6 @@ export default function ProjetsPage() {
   );
 
   const activeProjects = projects || [];
-  const canManage = profile?.role === "ceo" || profile?.role === "admin";
 
   const handleCreateProject = async (data: any) => {
     try {
@@ -57,6 +59,32 @@ export default function ProjetsPage() {
   const handleDeleteTask = async (taskId: string) => {
     try {
       await deleteTask({ id: taskId as any });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleUpdateTaskWorkflow = async (
+    taskId: string,
+    data: {
+      statut: "attendu" | "encours" | "termine";
+      detailsFait?: string;
+      detailsBlocage?: string;
+      detailsReste?: string;
+      notes?: string;
+      importance?: "critique" | "haute" | "moyenne" | "basse";
+    }
+  ) => {
+    try {
+      await updateTaskWorkflow({
+        id: taskId as any,
+        statut: data.statut,
+        detailsFait: data.detailsFait,
+        detailsBlocage: data.detailsBlocage,
+        detailsReste: data.detailsReste,
+        notes: data.notes,
+        importance: data.importance,
+      });
     } catch (e) {
       console.error(e);
     }
@@ -104,8 +132,10 @@ export default function ProjetsPage() {
         onClose={() => setSelectedId(null)}
         onAddTask={handleAddTask}
         onUpdateTaskProgress={handleUpdateTaskProgress}
+        onUpdateTaskWorkflow={handleUpdateTaskWorkflow}
         onDeleteTask={handleDeleteTask}
         canManage={canManage}
+        employees={(employees || []) as any}
       />
 
       {canManage && (

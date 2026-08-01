@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
+import { PwaRegistrar } from "@/components/layout/PwaRegistrar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export default function RootLayout({
       <html lang="fr">
         <body>
           <ConvexClientProvider>{children}</ConvexClientProvider>
+          <PwaRegistrar />
         </body>
       </html>
     </ConvexAuthNextjsServerProvider>

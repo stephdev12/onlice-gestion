@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { TaskItem } from "./TaskItem";
+import { DevProjectBoard } from "./DevProjectBoard";
 import { formatDate, todayISO } from "@/lib/utils";
-import { TEAM_ROLES } from "@/lib/constants";
+import { PROJECT_TYPE_LABELS, TEAM_ROLES } from "@/lib/constants";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { AnimatePresence } from "motion/react";
@@ -17,9 +18,15 @@ interface Task {
   _id: string;
   titre: string;
   priorite: string;
+  importance?: string;
   echeance: string;
   assigne?: string;
   assigneId?: string;
+  statut?: "attendu" | "encours" | "termine";
+  detailsFait?: string;
+  detailsBlocage?: string;
+  detailsReste?: string;
+  notes?: string;
   progression: number;
 }
 
@@ -28,6 +35,7 @@ interface ProjectDetail {
   titre: string;
   client?: string;
   description?: string;
+  projectType?: string;
   echeanceDefaut: string;
   equipe: string[];
   taches: Task[];
@@ -36,10 +44,30 @@ interface ProjectDetail {
 interface ProjectDrawerProps {
   project: ProjectDetail | null;
   onClose: () => void;
-  onAddTask: (projectId: string, task: { titre: string; priorite: string; echeance: string; assigneId: string }) => void;
+  onAddTask: (projectId: string, task: {
+    titre: string;
+    priorite: string;
+    importance?: "critique" | "haute" | "moyenne" | "basse";
+    echeance: string;
+    assigneId: string;
+    statut?: "attendu" | "encours" | "termine";
+    detailsFait?: string;
+    detailsBlocage?: string;
+    detailsReste?: string;
+    notes?: string;
+  }) => Promise<void>;
   onUpdateTaskProgress: (taskId: string, progress: number) => void;
+  onUpdateTaskWorkflow: (taskId: string, data: {
+    statut: "attendu" | "encours" | "termine";
+    detailsFait?: string;
+    detailsBlocage?: string;
+    detailsReste?: string;
+    notes?: string;
+    importance?: "critique" | "haute" | "moyenne" | "basse";
+  }) => Promise<void>;
   onDeleteTask: (taskId: string) => void;
   canManage?: boolean;
+  employees?: Array<{ _id: string; nom: string; poste?: string; departement: string }>;
 }
 
 export function ProjectDrawer({
@@ -47,8 +75,10 @@ export function ProjectDrawer({
   onClose,
   onAddTask,
   onUpdateTaskProgress,
+  onUpdateTaskWorkflow,
   onDeleteTask,
   canManage = true,
+  employees = [],
 }: ProjectDrawerProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [taskTitre, setTaskTitre] = useState("");
@@ -58,7 +88,7 @@ export function ProjectDrawer({
   const [err, setErr] = useState(false);
 
   // employees.list requires admin/ceo access — skip it for employees to avoid an Unauthorized crash
-  const employees = useQuery(api.employees.list, canManage ? {} : "skip");
+  const employeesList = useQuery(api.employees.list, canManage ? {} : "skip");
 
   if (!project) return null;
 
@@ -84,6 +114,9 @@ export function ProjectDrawer({
     setErr(false);
     setShowAddForm(false);
   };
+
+  const projectType = project.projectType || "dev";
+  const teamForBoard = (employeesList || employees) as Array<{ _id: string; nom: string; poste?: string; departement: string }>;
 
   return (
     <Drawer
@@ -124,6 +157,10 @@ export function ProjectDrawer({
             </p>
           )}
 
+          <div style={{ marginTop: "8px", marginBottom: "8px" }}>
+            <Badge variant="neutral">{PROJECT_TYPE_LABELS[projectType] || "Projet"}</Badge>
+          </div>
+
           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "8px" }}>
             {project.equipe.map((initials) => (
               <div
@@ -139,154 +176,166 @@ export function ProjectDrawer({
         </div>
 
         <div style={{ borderTop: "1px solid var(--mist-line)", paddingTop: "16px" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "12px",
-            }}
-          >
-            <p
-              style={{
-                fontSize: "12px",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: "var(--slate)",
-              }}
-            >
-              Tâches & Missions ({tasks.length})
-            </p>
-          </div>
-
-          {tasks.length === 0 ? (
-            <div
-              style={{
-                fontSize: "13px",
-                color: "var(--slate)",
-                padding: "16px 0",
-                textAlign: "center",
-              }}
-            >
-              Aucune tâche attribuable.
-            </div>
+          {projectType === "dev" ? (
+            <DevProjectBoard
+              project={project}
+              canManage={canManage}
+              onUpdateWorkflow={onUpdateTaskWorkflow}
+              onAddTask={onAddTask}
+              employees={teamForBoard}
+            />
           ) : (
-            <AnimatePresence>
-              {tasks.map((t) => (
-                <TaskItem
-                  key={t._id}
-                  task={t}
-                  onUpdateProgress={onUpdateTaskProgress}
-                  onDelete={onDeleteTask}
-                  canDelete={canManage}
-                />
-              ))}
-            </AnimatePresence>
-          )}
-
-          {canManage && (!showAddForm ? (
-            <button
-              onClick={() => setShowAddForm(true)}
-              style={{
-                width: "100%",
-                fontSize: "12.5px",
-                color: "var(--ink)",
-                background: "var(--mist)",
-                border: "1px dashed var(--mist-line)",
-                borderRadius: "10px",
-                padding: "10px",
-                textAlign: "center",
-                cursor: "pointer",
-                marginTop: "12px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "6px",
-              }}
-            >
-              <Plus size={14} /> Attribuer une nouvelle mission
-            </button>
-          ) : (
-            <form
-              onSubmit={handleCreateTask}
-              style={{
-                border: "1px solid var(--mist-line)",
-                borderRadius: "10px",
-                padding: "14px",
-                marginTop: "12px",
-                background: "var(--mist)",
-              }}
-            >
-              <div className="field">
-                <label>Nom de la mission *</label>
-                <input
-                  type="text"
-                  placeholder="Ex : Intégrer la page d'accueil"
-                  value={taskTitre}
-                  onChange={(e) => {
-                    setTaskTitre(e.target.value);
-                    if (e.target.value.trim() && taskAssigneId) setErr(false);
-                  }}
-                />
-              </div>
-
-              <div className="field">
-                <label>Attribuer à un employé *</label>
-                <select
-                  value={taskAssigneId}
-                  onChange={(e) => {
-                    setTaskAssigneId(e.target.value);
-                    if (taskTitre.trim() && e.target.value) setErr(false);
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "12px",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    color: "var(--slate)",
                   }}
                 >
-                  <option value="">Sélectionner un employé...</option>
-                  {(employees || []).map((emp) => (
-                    <option key={emp._id} value={emp._id}>
-                      {emp.nom} ({emp.poste || emp.departement})
-                    </option>
+                  Feuille d'execution ({tasks.length})
+                </p>
+              </div>
+
+              {tasks.length === 0 ? (
+                <div
+                  style={{
+                    fontSize: "13px",
+                    color: "var(--slate)",
+                    padding: "16px 0",
+                    textAlign: "center",
+                  }}
+                >
+                  Aucune tache enregistree.
+                </div>
+              ) : (
+                <AnimatePresence>
+                  {tasks.map((t) => (
+                    <TaskItem
+                      key={t._id}
+                      task={t}
+                      onUpdateProgress={onUpdateTaskProgress}
+                      onDelete={onDeleteTask}
+                      canDelete={canManage}
+                    />
                   ))}
-                </select>
-                {err && <div className="field-err">Le nom et l'employé sont requis.</div>}
-              </div>
+                </AnimatePresence>
+              )}
 
-              <div style={{ display: "flex", gap: "10px" }}>
-                <div className="field" style={{ flex: 1 }}>
-                  <label>Priorité</label>
-                  <select
-                    value={taskPriorite}
-                    onChange={(e) => setTaskPriorite(e.target.value)}
-                  >
-                    <option value="basse">Basse</option>
-                    <option value="moyenne">Moyenne</option>
-                    <option value="haute">Haute</option>
-                  </select>
-                </div>
-                <div className="field" style={{ flex: 1 }}>
-                  <label>Échéance</label>
-                  <input
-                    type="date"
-                    value={taskEcheance}
-                    onChange={(e) => setTaskEcheance(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowAddForm(false)}
-                  style={{ flex: 1 }}
+              {canManage && (!showAddForm ? (
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  style={{
+                    width: "100%",
+                    fontSize: "12.5px",
+                    color: "var(--ink)",
+                    background: "var(--mist)",
+                    border: "1px dashed var(--mist-line)",
+                    borderRadius: "10px",
+                    padding: "10px",
+                    textAlign: "center",
+                    cursor: "pointer",
+                    marginTop: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                  }}
                 >
-                  Annuler
-                </Button>
-                <Button type="submit" variant="primary" style={{ flex: 1 }}>
-                  Attribuer
-                </Button>
-              </div>
-            </form>
-          ))}
+                  <Plus size={14} /> Attribuer une nouvelle mission
+                </button>
+              ) : (
+                <form
+                  onSubmit={handleCreateTask}
+                  style={{
+                    border: "1px solid var(--mist-line)",
+                    borderRadius: "10px",
+                    padding: "14px",
+                    marginTop: "12px",
+                    background: "var(--mist)",
+                  }}
+                >
+                  <div className="field">
+                    <label>Nom de la mission *</label>
+                    <input
+                      type="text"
+                      placeholder="Ex : Lancer la campagne locale"
+                      value={taskTitre}
+                      onChange={(e) => {
+                        setTaskTitre(e.target.value);
+                        if (e.target.value.trim() && taskAssigneId) setErr(false);
+                      }}
+                    />
+                  </div>
+
+                  <div className="field">
+                    <label>Attribuer a un employe *</label>
+                    <select
+                      value={taskAssigneId}
+                      onChange={(e) => {
+                        setTaskAssigneId(e.target.value);
+                        if (taskTitre.trim() && e.target.value) setErr(false);
+                      }}
+                    >
+                      <option value="">Selectionner un employe...</option>
+                      {(teamForBoard || []).map((emp) => (
+                        <option key={emp._id} value={emp._id}>
+                          {emp.nom} ({emp.poste || emp.departement})
+                        </option>
+                      ))}
+                    </select>
+                    {err && <div className="field-err">Le nom et l'employe sont requis.</div>}
+                  </div>
+
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <div className="field" style={{ flex: 1 }}>
+                      <label>Priorite</label>
+                      <select
+                        value={taskPriorite}
+                        onChange={(e) => setTaskPriorite(e.target.value)}
+                      >
+                        <option value="basse">Basse</option>
+                        <option value="moyenne">Moyenne</option>
+                        <option value="haute">Haute</option>
+                      </select>
+                    </div>
+                    <div className="field" style={{ flex: 1 }}>
+                      <label>Echeance</label>
+                      <input
+                        type="date"
+                        value={taskEcheance}
+                        onChange={(e) => setTaskEcheance(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowAddForm(false)}
+                      style={{ flex: 1 }}
+                    >
+                      Annuler
+                    </Button>
+                    <Button type="submit" variant="primary" style={{ flex: 1 }}>
+                      Attribuer
+                    </Button>
+                  </div>
+                </form>
+              ))}
+            </>
+          )}
         </div>
       </div>
     </Drawer>

@@ -12,6 +12,7 @@ interface AddProjectDrawerProps {
     titre: string;
     client?: string;
     description?: string;
+    projectType?: "dev" | "marketing_digital" | "design" | "campagne_marketing" | "rapide";
     echeanceDefaut: string;
     equipe: string[];
   }) => void;
@@ -21,6 +22,7 @@ export function AddProjectDrawer({ isOpen, onClose, onSubmit }: AddProjectDrawer
   const [titre, setTitre] = useState("");
   const [client, setClient] = useState("");
   const [description, setDescription] = useState("");
+  const [projectType, setProjectType] = useState<"dev" | "marketing_digital" | "design" | "campagne_marketing" | "rapide">("dev");
   const [echeance, setEcheance] = useState(todayISO());
   const [equipeText, setEquipeText] = useState("MK, SK");
   const [err, setErr] = useState(false);
@@ -40,6 +42,7 @@ export function AddProjectDrawer({ isOpen, onClose, onSubmit }: AddProjectDrawer
       titre: titre.trim(),
       client: client.trim(),
       description: description.trim(),
+      projectType,
       echeanceDefaut: echeance || todayISO(),
       equipe,
     });
@@ -91,6 +94,20 @@ export function AddProjectDrawer({ isOpen, onClose, onSubmit }: AddProjectDrawer
             onChange={(e) => setDescription(e.target.value)}
             style={{ minHeight: "70px" }}
           />
+        </div>
+
+        <div className="field">
+          <label>Type de projet</label>
+          <select
+            value={projectType}
+            onChange={(e) => setProjectType(e.target.value as "dev" | "marketing_digital" | "design" | "campagne_marketing" | "rapide")}
+          >
+            <option value="dev">Developpement logiciel</option>
+            <option value="marketing_digital">Marketing digital</option>
+            <option value="design">Design / Branding</option>
+            <option value="campagne_marketing">Campagne marketing</option>
+            <option value="rapide">Projet rapide</option>
+          </select>
         </div>
 
         <div className="field">
