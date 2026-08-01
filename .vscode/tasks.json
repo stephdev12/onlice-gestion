@@ -90,9 +90,9 @@
 			"isBackground": false
 		},
 		{
-			"label": "Amend commit remove secret",
+			"label": "Final clean amend before push",
 			"type": "shell",
-			"command": "git add -A; git commit --amend --no-edit",
+			"command": "git add -A; git commit --amend --no-edit; git log --oneline -1",
 			"isBackground": false
 		}
 	]
