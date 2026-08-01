@@ -84,21 +84,15 @@
 			"group": "build"
 		},
 		{
-			"label": "Git status check",
+			"label": "Next.js production build",
 			"type": "shell",
-			"command": "git status --short",
+			"command": "cmd /c npm run build",
 			"isBackground": false
 		},
 		{
-			"label": "Git commit changes",
+			"label": "Amend commit remove secret",
 			"type": "shell",
-			"command": "git add -A; git commit -m \"Fix auth config, add finance ledger, improve mobile responsiveness\"",
-			"isBackground": false
-		},
-		{
-			"label": "Git add all",
-			"type": "shell",
-			"command": "git add -A",
+			"command": "git add -A; git commit --amend --no-edit",
 			"isBackground": false
 		}
 	]
