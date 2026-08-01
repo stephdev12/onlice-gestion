@@ -5,8 +5,12 @@ import { PwaRegistrar } from "@/components/layout/PwaRegistrar";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Onlice ERP — Platforme de Gestion Startup",
+  title: "Onlice ERP — Plateforme de Gestion Startup",
   description: "Solution ERP moderne pour startups : CRM, Projets, RH et Finance.",
+  icons: [
+    { rel: "icon", url: "/logo_icon.png" },
+    { rel: "apple-touch-icon", url: "/logo_icon.png" },
+  ],
 };
 
 export default function RootLayout({

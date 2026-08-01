@@ -58,9 +58,23 @@ button, input, select, textarea {
   font-size: inherit;
 }
 
-:focus-visible {
+button, input, select, textarea {
+  outline: none;
+}
+
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
+}
+
+select, textarea {
+  background: var(--paper);
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 /* App Shell Layout */
@@ -478,9 +492,10 @@ button, input, select, textarea {
 }
 
 .project-kanban-3 {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
   gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
 }
 
 .kanban-pro-column {
@@ -490,6 +505,25 @@ button, input, select, textarea {
   min-height: 280px;
   display: flex;
   flex-direction: column;
+  flex: 0 0 320px;
+}
+
+/* styled selects for better mobile/visuals */
+.select-styled {
+  position: relative;
+}
+.select-styled select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 36px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--slate) 50%), linear-gradient(135deg, var(--slate) 50%, transparent 50%), linear-gradient(to right, transparent, transparent);
+  background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px), 100% 0;
+  background-size: 6px 6px, 6px 6px, 1px 18px;
+  background-repeat: no-repeat;
+}
+
+.select-styled::after {
+  content: '';
 }
 
 .kanban-pro-header {

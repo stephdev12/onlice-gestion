@@ -66,6 +66,7 @@ interface ProjectDrawerProps {
     importance?: "critique" | "haute" | "moyenne" | "basse";
   }) => Promise<void>;
   onDeleteTask: (taskId: string) => void;
+  onDeleteProject?: (projectId: string) => void;
   canManage?: boolean;
   employees?: Array<{ _id: string; nom: string; poste?: string; departement: string }>;
 }
@@ -79,6 +80,7 @@ export function ProjectDrawer({
   onDeleteTask,
   canManage = true,
   employees = [],
+  onDeleteProject,
 }: ProjectDrawerProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [taskTitre, setTaskTitre] = useState("");
@@ -135,18 +137,25 @@ export function ProjectDrawer({
               marginBottom: "8px",
             }}
           >
-            <Badge variant={progress >= 100 ? "termine" : "encours"}>
-              {progress >= 100 ? "Terminé" : "En cours"}
-            </Badge>
-            <span
-              style={{
-                fontFamily: "'Geist Mono', monospace",
-                fontSize: "12px",
-                color: "var(--slate)",
-              }}
-            >
-              Échéance {formatDate(project.echeanceDefaut)}
-            </span>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <Badge variant={progress >= 100 ? "termine" : "encours"}>
+                {progress >= 100 ? "Terminé" : "En cours"}
+              </Badge>
+              <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: "12px", color: "var(--slate)" }}>
+                Échéance {formatDate(project.echeanceDefaut)}
+              </span>
+            </div>
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {canManage && onDeleteProject && (
+                <button
+                  onClick={() => onDeleteProject(project._id)}
+                  style={{ background: "transparent", border: "1px solid var(--danger)", color: "var(--danger)", padding: "6px 10px", borderRadius: 8 }}
+                >
+                  Supprimer le projet
+                </button>
+              )}
+            </div>
           </div>
 
           <ProgressBar progress={progress} variant={progress >= 100 ? "termine" : "encours"} height={8} />
@@ -166,7 +175,7 @@ export function ProjectDrawer({
               <div
                 key={initials}
                 className="avatar"
-                style={{ width: "24px", height: "24px", fontSize: "10px" }}
+                style={{ width: "28px", height: "28px", fontSize: "11px" }}
                 title={TEAM_ROLES[initials] || initials}
               >
                 {initials}

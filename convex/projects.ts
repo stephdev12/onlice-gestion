@@ -294,6 +294,32 @@ export const markNotificationRead = mutation({
   },
 });
 
+export const deleteProject = mutation({
+  args: { id: v.id("projects") },
+  handler: async (ctx, args) => {
+    const profile = await getCurrentProfile(ctx);
+    if (!profile) throw new Error("Unauthorized");
+    if (profile.role !== "ceo" && profile.role !== "admin") throw new Error("Forbidden");
+
+    // cascade delete tasks and related entries
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_project", (q) => q.eq("projectId", args.id as never))
+      .collect();
+
+    for (const t of tasks) {
+      // delete comments and activity
+      const comments = await ctx.db.query("taskComments").withIndex("by_task", (q) => q.eq("taskId", t._id as never)).collect();
+      for (const c of comments) await ctx.db.delete(c._id);
+      const acts = await ctx.db.query("taskActivity").withIndex("by_task", (q) => q.eq("taskId", t._id as never)).collect();
+      for (const a of acts) await ctx.db.delete(a._id);
+      await ctx.db.delete(t._id);
+    }
+
+    await ctx.db.delete(args.id);
+  },
+});
+
 export const addComment = mutation({
   args: { taskId: v.id("tasks"), text: v.string() },
   handler: async (ctx, args) => {

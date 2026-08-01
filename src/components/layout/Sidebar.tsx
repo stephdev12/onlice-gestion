@@ -3,23 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { 
-  LayoutDashboard, 
-  GitPullRequest, 
-  FolderKanban, 
-  Users, 
-  Wallet, 
+import {
+  LayoutDashboard,
+  GitPullRequest,
+  FolderKanban,
+  Users,
+  Wallet,
   FileText,
   ClipboardList,
-  LogOut 
 } from "lucide-react";
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { signOut } = useAuthActions();
   const profile = useQuery(api.profiles.current);
 
   const isCeo = profile?.role === "ceo";
@@ -96,14 +93,6 @@ export function Sidebar() {
             <div style={{ fontSize: "11px", color: "var(--slate)" }}>{roleTitle}</div>
           </div>
         </div>
-        <button
-          onClick={() => void signOut()}
-          className="icon-btn"
-          title="Se déconnecter"
-          style={{ cursor: "pointer", color: "var(--danger)" }}
-        >
-          <LogOut size={16} />
-        </button>
       </div>
     </aside>
   );

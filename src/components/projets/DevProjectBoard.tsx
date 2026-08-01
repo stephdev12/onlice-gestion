@@ -97,6 +97,9 @@ export function DevProjectBoard({ project, canManage, onUpdateWorkflow, onAddTas
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedTask, setSelectedTask] = useState<ProjectTask | null>(null);
+  const selectedTaskId = selectedTask?._id;
+  const comments = useQuery(api.projects.commentsForTask, selectedTaskId ? { taskId: selectedTaskId as any } : "skip");
+  const activity = useQuery(api.projects.activityForTask, selectedTaskId ? { taskId: selectedTaskId as any } : "skip");
 
   const [form, setForm] = useState({
     titre: "",
@@ -119,19 +122,38 @@ export function DevProjectBoard({ project, canManage, onUpdateWorkflow, onAddTas
           {project.client && <Badge variant="encours">Client: {project.client}</Badge>}
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            <select value={filters.assigneId} onChange={(e) => setFilters(f => ({ ...f, assigneId: e.target.value }))}>
-              <option value="">Tous</option>
-              {employees.map(emp => <option key={emp._id} value={emp._id}>{emp.nom}</option>)}
-            </select>
-            <select value={filters.importance} onChange={(e) => setFilters(f => ({ ...f, importance: e.target.value }))}>
-              <option value="">Importance</option>
-              <option value="critique">Critique</option>
-              <option value="haute">Haute</option>
-              <option value="moyenne">Moyenne</option>
-              <option value="basse">Basse</option>
-            </select>
-            <input placeholder="Sprint" value={filters.sprint} onChange={(e) => setFilters(f => ({ ...f, sprint: e.target.value }))} style={{ width: 100 }} />
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+            <div className="select-styled" style={{ minWidth: 140, flex: "1 1 auto" }}>
+              <select value={filters.assigneId} onChange={(e) => setFilters(f => ({ ...f, assigneId: e.target.value }))}>
+                <option value="">Tous les membres</option>
+                {employees.map(emp => <option key={emp._id} value={emp._id}>{emp.nom}</option>)}
+              </select>
+            </div>
+            <div className="select-styled" style={{ minWidth: 140, flex: "1 1 auto" }}>
+              <select value={filters.importance} onChange={(e) => setFilters(f => ({ ...f, importance: e.target.value }))}>
+                <option value="">Toutes importances</option>
+                <option value="critique">Critique</option>
+                <option value="haute">Haute</option>
+                <option value="moyenne">Moyenne</option>
+                <option value="basse">Basse</option>
+              </select>
+            </div>
+            <div className="select-styled" style={{ minWidth: 140, flex: "1 1 auto" }}>
+              <select value={filters.type} onChange={(e) => setFilters(f => ({ ...f, type: e.target.value }))}>
+                <option value="">Tous types</option>
+                <option value="bug">Bug</option>
+                <option value="feature">Feature</option>
+                <option value="amelioration">Amélioration</option>
+              </select>
+            </div>
+            <div className="select-styled" style={{ minWidth: 140, flex: "1 1 auto" }}>
+              <select value={filters.sprint} onChange={(e) => setFilters(f => ({ ...f, sprint: e.target.value }))}>
+                <option value="">Tous sprints</option>
+                <option value="sprint-1">Sprint 1</option>
+                <option value="sprint-2">Sprint 2</option>
+                <option value="sprint-3">Sprint 3</option>
+              </select>
+            </div>
           </div>
           {canManage && (
           <Button variant="outline" onClick={() => setShowCreate((v) => !v)}>
@@ -248,8 +270,13 @@ export function DevProjectBoard({ project, canManage, onUpdateWorkflow, onAddTas
               const id = e.dataTransfer.getData("text/taskId");
               if (!id) return;
               setEditingTaskId(id);
-              await onUpdateWorkflow(id, { statut: status as WorkflowStatus });
-              setEditingTaskId(null);
+              try {
+                await onUpdateWorkflow(id, { statut: status as WorkflowStatus });
+              } catch (err) {
+                console.error(err);
+              } finally {
+                setEditingTaskId(null);
+              }
             }}
           >
             <div className="kanban-pro-header">
@@ -268,8 +295,10 @@ export function DevProjectBoard({ project, canManage, onUpdateWorkflow, onAddTas
                     <div style={{ fontWeight: 600, fontSize: "13.5px" }}>{task.titre}</div>
                     <Badge variant={task.priorite as "haute" | "moyenne" | "basse"}>{task.importance || task.priorite}</Badge>
                   </div>
-                  <div style={{ fontSize: "12px", color: "var(--slate)", marginTop: "4px" }}>
-                    Assigné: {task.assigne || "N/A"}
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "6px", fontSize: "12px", color: "var(--slate)" }}>
+                    <span>Assigné: {task.assigne || "N/A"}</span>
+                    {task.type && <span>Type: {task.type}</span>}
+                    {task.sprint && <span>Sprint: {task.sprint}</span>}
                   </div>
 
                   {task.detailsFait && (
@@ -297,34 +326,35 @@ export function DevProjectBoard({ project, canManage, onUpdateWorkflow, onAddTas
                         key={nextStatus}
                         type="button"
                         className={`status-chip ${nextStatus === (task.statut || "attendu") ? "active" : ""}`}
-                        onClick={async () => {
+                        onClick={async (e) => {
+                          e.stopPropagation();
                           setEditingTaskId(task._id);
-                          await onUpdateWorkflow(task._id, {
-                            statut: nextStatus,
-                            detailsFait: task.detailsFait,
-                            detailsBlocage: task.detailsBlocage,
-                            detailsReste: task.detailsReste,
-                            notes: task.notes,
-                            importance: (task.importance as "critique" | "haute" | "moyenne" | "basse" | undefined) || undefined,
-                          });
-                          setEditingTaskId(null);
+                          try {
+                            await onUpdateWorkflow(task._id, {
+                              statut: nextStatus,
+                              detailsFait: task.detailsFait,
+                              detailsBlocage: task.detailsBlocage,
+                              detailsReste: task.detailsReste,
+                              notes: task.notes,
+                              importance: (task.importance as "critique" | "haute" | "moyenne" | "basse" | undefined) || undefined,
+                            });
+                          } catch (err) {
+                            console.error(err);
+                          } finally {
+                            setEditingTaskId(null);
+                          }
                         }}
                         disabled={editingTaskId === task._id}
                       >
                         {nextStatus}
                       </button>
                     ))}
-                    <button type="button" className="status-chip" onClick={async () => {
-                      const text = prompt("Ajouter un commentaire / activité :");
-                      if (!text) return;
-                      try {
-                        await addComment({ taskId: task._id as any, text });
-                        alert("Commentaire ajouté");
-                      } catch (e) {
-                        console.error(e);
-                        alert("Erreur lors de l'ajout du commentaire");
-                      }
-                    }}>Commenter</button>
+                    <button type="button" className="status-chip" onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTask(task);
+                    }}>
+                      Commenter
+                    </button>
                   </div>
                 </div>
               ))}
@@ -345,8 +375,7 @@ export function DevProjectBoard({ project, canManage, onUpdateWorkflow, onAddTas
             <div style={{ display: "flex", gap: 16 }}>
               <div style={{ flex: 1 }}>
                 <h4>Commentaires</h4>
-                {/* load comments */}
-                {useQuery(api.projects.commentsForTask, selectedTask ? ({ taskId: selectedTask._id as any } as any) : ("skip" as any))?.map((c: any) => (
+                {(comments || []).map((c: any) => (
                   <div key={c._id} style={{ padding: 10, borderBottom: "1px solid var(--mist-line)" }}>
                     <div style={{ fontWeight: 600 }}>{c.authorName} <span style={{ fontWeight: 400, fontSize: 12, color: "var(--slate)" }}>{new Date(c.createdAt).toLocaleString()}</span></div>
                     <div style={{ marginTop: 6 }}>{c.text}</div>
@@ -360,7 +389,7 @@ export function DevProjectBoard({ project, canManage, onUpdateWorkflow, onAddTas
 
               <div style={{ width: 320 }}>
                 <h4>Activité</h4>
-                {useQuery(api.projects.activityForTask, selectedTask ? ({ taskId: selectedTask._id as any } as any) : ("skip" as any))?.map((a: any) => (
+                {(activity || []).map((a: any) => (
                   <div key={a._id} style={{ padding: 8, borderBottom: "1px dashed var(--mist-line)", fontSize: 13 }}>
                     <div style={{ color: "var(--slate)", fontSize: 12 }}>{new Date(a.createdAt).toLocaleString()} — {a.type}</div>
                     {a.payload && <div style={{ marginTop: 6 }}>{a.payload}</div>}
@@ -377,14 +406,37 @@ export function DevProjectBoard({ project, canManage, onUpdateWorkflow, onAddTas
 
 function CommentForm({ taskId, onAdded }: { taskId: string; onAdded?: () => void }) {
   const [text, setText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const addComment = useMutation(api.projects.addComment);
-  const submittingState = useState(false);
 
   return (
-    <form onSubmit={async (e) => { e.preventDefault(); if (!text.trim()) return; try { await addComment({ taskId: taskId as any, text: text.trim() }); setText(""); onAdded?.(); } catch (err) { console.error(err); alert("Erreur ajout commentaire"); } }}>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Ajouter un commentaire..." style={{ width: "100%", minHeight: 72 }} />
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!text.trim()) return;
+        setSubmitting(true);
+        try {
+          await addComment({ taskId: taskId as any, text: text.trim() });
+          setText("");
+          onAdded?.();
+        } catch (err) {
+          console.error(err);
+          alert("Erreur ajout commentaire");
+        } finally {
+          setSubmitting(false);
+        }
+      }}
+    >
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Ajouter un commentaire..."
+        style={{ width: "100%", minHeight: 72 }}
+      />
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-        <button type="submit" className="status-chip">Envoyer</button>
+        <button type="submit" className="status-chip" disabled={submitting}>
+          {submitting ? "Envoi…" : "Envoyer"}
+        </button>
       </div>
     </form>
   );

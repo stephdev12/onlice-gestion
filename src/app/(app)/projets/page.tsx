@@ -64,6 +64,17 @@ export default function ProjetsPage() {
     }
   };
 
+  const deleteProject = useMutation(api.projects.deleteProject);
+  const handleDeleteProject = async (projectId: string) => {
+    try {
+      if (!confirm("Supprimer ce projet ? Cette action est irréversible.")) return;
+      await deleteProject({ id: projectId as any });
+      if (selectedId === projectId) setSelectedId(null);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleUpdateTaskWorkflow = async (
     taskId: string,
     data: {
@@ -134,6 +145,7 @@ export default function ProjetsPage() {
         onUpdateTaskProgress={handleUpdateTaskProgress}
         onUpdateTaskWorkflow={handleUpdateTaskWorkflow}
         onDeleteTask={handleDeleteTask}
+        onDeleteProject={handleDeleteProject}
         canManage={canManage}
         employees={(employees || []) as any}
       />
