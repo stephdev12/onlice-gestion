@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { motion } from "motion/react";
 
@@ -22,16 +23,7 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         style={{ textAlign: "center", marginBottom: "32px" }}
       >
-        <div
-          style={{
-            fontSize: "36px",
-            fontWeight: 700,
-            letterSpacing: "-0.02em",
-            marginBottom: "8px",
-          }}
-        >
-          onli<span style={{ color: "var(--orange)" }}>c</span>e
-        </div>
+        <Image src="/onlice_logo.png" alt="Onlice" width={180} height={46} style={{ marginBottom: 8 }} />
         <div style={{ fontSize: "15px", color: "var(--slate)" }}>
           Plateforme ERP Écosystème Startup
         </div>

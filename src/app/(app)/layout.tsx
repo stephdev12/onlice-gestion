@@ -1,6 +1,7 @@
 "use client";
 
 import { Sidebar } from "@/components/layout/Sidebar";
+import Image from "next/image";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -44,10 +45,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         }}
       >
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "24px", fontWeight: 700, marginBottom: "8px" }}>
-            onli<span style={{ color: "var(--orange)" }}>c</span>e
-          </div>
-          <div style={{ fontSize: "13px", color: "var(--slate)" }}>
+          <Image src="/onlice_logo.png" alt="Onlice" width={180} height={46} />
+          <div style={{ fontSize: "13px", color: "var(--slate)", marginTop: 10 }}>
             {!isLoading && isAuthenticated
               ? "Initialisation de votre espace..."
               : "Vérification de l'authentification..."}

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { useQuery } from "convex/react";
@@ -45,7 +46,7 @@ export function Sidebar() {
     <aside className="sidebar">
       <div>
         <div className="sidebar-logo">
-          onli<span className="c">c</span>e
+          <Image src="/onlice_logo.png" alt="Onlice" width={140} height={34} />
         </div>
         <nav className="sidebar-nav">
           {navItems.map((item) => {

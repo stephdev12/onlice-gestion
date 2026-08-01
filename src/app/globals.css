@@ -687,10 +687,7 @@ select {
   }
 
   .sidebar-user {
-    display: flex;
-    flex: 0 0 auto;
-    padding: 0;
-    border: 0;
+    display: none;
   }
 
   .sidebar-user .user-info {
@@ -746,6 +743,11 @@ select {
     font-size: 12px;
   }
 
+  .headbar-actions .header-user-info,
+  .headbar-actions button[title="Se déconnecter"] {
+    display: none;
+  }
+
   .content-body {
     padding: 16px 14px 28px;
   }
@@ -775,7 +777,17 @@ select {
   }
 
   .project-kanban-3 {
-    grid-template-columns: 1fr;
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .kanban-pro-column {
+    min-width: 320px;
+    flex: 0 0 320px;
   }
 
   .drawer {
