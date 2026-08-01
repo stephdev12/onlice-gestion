@@ -30,11 +30,7 @@ export function TeamGrid({ employees, onSelectEmployee }: TeamGridProps) {
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-        gap: "14px",
-      }}
+      className="team-grid"
     >
       {employees.map((e) => (
         <motion.div key={e._id} variants={fadeInUp}>

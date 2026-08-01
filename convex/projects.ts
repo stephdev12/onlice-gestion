@@ -168,6 +168,37 @@ export const deleteTask = mutation({
   },
 });
 
+export const lateProjects = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+    const today = new Date().toISOString().split("T")[0];
+    const projects = await ctx.db.query("projects").collect();
+    const late = projects.filter((p) => p.echeanceDefaut < today);
+
+    const result = await Promise.all(
+      late.map(async (p) => {
+        const tasks = await ctx.db
+          .query("tasks")
+          .withIndex("by_project", (q) => q.eq("projectId", p._id))
+          .collect();
+        const progression = tasks.length
+          ? Math.round(tasks.reduce((sum, t) => sum + t.progression, 0) / tasks.length)
+          : 0;
+        return {
+          id: p._id,
+          titre: p.titre,
+          client: p.client,
+          echeance: p.echeanceDefaut,
+          progression,
+        };
+      })
+    );
+
+    return result.sort((a, b) => a.echeance.localeCompare(b.echeance)).slice(0, 5);
+  },
+});
+
 export const notifications = query({
   args: {},
   handler: async (ctx) => {

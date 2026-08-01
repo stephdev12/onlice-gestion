@@ -215,6 +215,45 @@ button, input, select, textarea {
   gap: 10px;
   align-items: center;
   flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* Reusable responsive layout grids (kept out of inline styles so media queries can override them) */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.form-row > .field {
+  flex: 1 1 160px;
+  min-width: 160px;
 }
 
 /* Buttons */
@@ -412,6 +451,9 @@ button, input, select, textarea {
   .content-body {
     padding: 20px;
   }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
@@ -485,10 +527,15 @@ button, input, select, textarea {
     align-items: flex-start;
     gap: 14px;
     padding: 16px;
+    flex-wrap: wrap;
   }
 
   .headbar h1 {
     font-size: 19px;
+  }
+
+  .headbar-actions {
+    width: 100%;
   }
 
   .headbar-actions .btn {
@@ -498,6 +545,20 @@ button, input, select, textarea {
 
   .content-body {
     padding: 16px 14px 28px;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .project-grid,
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row > .field {
+    flex-basis: 100%;
   }
 
   .kanban-board {

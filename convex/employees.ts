@@ -24,6 +24,32 @@ export const list = query({
   },
 });
 
+export const workloadByDepartment = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+    const employees = await ctx.db.query("employees").collect();
+    const tasks = await ctx.db.query("tasks").collect();
+
+    const activeTasksByEmployee = new Map<string, number>();
+    for (const t of tasks) {
+      if (t.assigneId && t.progression < 100) {
+        activeTasksByEmployee.set(t.assigneId, (activeTasksByEmployee.get(t.assigneId) ?? 0) + 1);
+      }
+    }
+
+    const byDept = new Map<string, number>();
+    for (const e of employees) {
+      const count = activeTasksByEmployee.get(e._id) ?? 0;
+      byDept.set(e.departement, (byDept.get(e.departement) ?? 0) + count);
+    }
+
+    const entries = Array.from(byDept.entries()).map(([label, count]) => ({ label, count }));
+    const max = Math.max(1, ...entries.map((e) => e.count));
+    return entries.map((e) => ({ ...e, max })).sort((a, b) => b.count - a.count);
+  },
+});
+
 export const pendingDemandes = query({
   args: {},
   handler: async (ctx) => {

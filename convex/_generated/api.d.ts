@@ -12,6 +12,7 @@ import type * as access from "../access.js";
 import type * as auth from "../auth.js";
 import type * as dashboard from "../dashboard.js";
 import type * as employees from "../employees.js";
+import type * as finance from "../finance.js";
 import type * as http from "../http.js";
 import type * as profiles from "../profiles.js";
 import type * as projects from "../projects.js";
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   dashboard: typeof dashboard;
   employees: typeof employees;
+  finance: typeof finance;
   http: typeof http;
   profiles: typeof profiles;
   projects: typeof projects;

@@ -1,14 +1,21 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { staggerContainer, fadeInUp } from "@/lib/animations";
 
-const reps = [
-  { nom: "Aline Foka (AF)", sub: "4 prospects gérés", taux: "50%" },
-  { nom: "Marc Kwedi (MK)", sub: "5 prospects gérés", taux: "20%" },
-];
-
 export function RepPerformance() {
+  const reps = useQuery(api.prospects.repPerformance) ?? [];
+
+  if (reps.length === 0) {
+    return (
+      <div style={{ fontSize: "13px", color: "var(--slate)", padding: "4px 0" }}>
+        Aucun prospect enregistré pour l&apos;instant.
+      </div>
+    );
+  }
+
   return (
     <motion.div
       variants={staggerContainer}
@@ -18,7 +25,7 @@ export function RepPerformance() {
     >
       {reps.map((r, idx) => (
         <motion.div
-          key={r.nom}
+          key={r.rep}
           variants={fadeInUp}
           style={{
             display: "flex",
@@ -29,9 +36,9 @@ export function RepPerformance() {
           }}
         >
           <div>
-            <div style={{ fontWeight: 500, fontSize: "13.5px" }}>{r.nom}</div>
+            <div style={{ fontWeight: 500, fontSize: "13.5px" }}>{r.rep}</div>
             <div style={{ fontSize: "12px", color: "var(--slate)", marginTop: "1px" }}>
-              {r.sub}
+              {r.total} prospect{r.total > 1 ? "s" : ""} géré{r.total > 1 ? "s" : ""}
             </div>
           </div>
           <span
@@ -41,7 +48,7 @@ export function RepPerformance() {
               flexShrink: 0,
             }}
           >
-            {r.taux}
+            {r.taux}%
           </span>
         </motion.div>
       ))}

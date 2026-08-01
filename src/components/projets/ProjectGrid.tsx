@@ -47,11 +47,7 @@ export function ProjectGrid({ projects, onSelectProject }: ProjectGridProps) {
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-        gap: "16px",
-      }}
+      className="project-grid"
     >
       {projects.map((p) => (
         <motion.div key={p._id} variants={fadeInUp}>

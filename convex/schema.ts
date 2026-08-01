@@ -98,6 +98,19 @@ export default defineSchema({
     .index("by_employe", ["employeId"])
     .index("by_statut", ["statut"]),
 
+  // Caisse - entrées et sorties d'argent (réservé CEO)
+  financeEntries: defineTable({
+    type: v.union(v.literal("entree"), v.literal("sortie")),
+    montant: v.number(),
+    date: v.string(),
+    source: v.optional(v.string()),      // provenance (entrée)
+    motif: v.optional(v.string()),       // raison (sortie)
+    description: v.optional(v.string()),
+    createdBy: v.optional(v.id("users")),
+  })
+    .index("by_type", ["type"])
+    .index("by_date", ["date"]),
+
   // Rapports hebdomadaires
   rapports: defineTable({
     employeId: v.id("employees"),

@@ -71,6 +71,35 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "Convex dev once",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				".\\node_modules\\convex\\bin\\main.js",
+				"dev",
+				"--once"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Git status check",
+			"type": "shell",
+			"command": "git status --short",
+			"isBackground": false
+		},
+		{
+			"label": "Git commit changes",
+			"type": "shell",
+			"command": "git add -A; git commit -m \"Fix auth config, add finance ledger, improve mobile responsiveness\"",
+			"isBackground": false
+		},
+		{
+			"label": "Git add all",
+			"type": "shell",
+			"command": "git add -A",
+			"isBackground": false
 		}
 	]
 }

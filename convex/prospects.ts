@@ -10,6 +10,31 @@ export const list = query({
   },
 });
 
+export const repPerformance = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+    const prospects = await ctx.db.query("prospects").collect();
+
+    const byRep = new Map<string, { total: number; converted: number }>();
+    for (const p of prospects) {
+      const rep = p.rep || "N/A";
+      const entry = byRep.get(rep) ?? { total: 0, converted: 0 };
+      entry.total += 1;
+      if (p.stage === "client" || p.stage === "fidele") entry.converted += 1;
+      byRep.set(rep, entry);
+    }
+
+    return Array.from(byRep.entries())
+      .map(([rep, { total, converted }]) => ({
+        rep,
+        total,
+        taux: total > 0 ? Math.round((converted / total) * 100) : 0,
+      }))
+      .sort((a, b) => b.total - a.total);
+  },
+});
+
 export const getById = query({
   args: { id: v.id("prospects") },
   handler: async (ctx, args) => {

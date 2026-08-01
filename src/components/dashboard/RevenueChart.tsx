@@ -1,24 +1,25 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
-interface MonthData {
-  label: string;
-  revenu: number;
-  depense: number;
+interface RevenueChartProps {
+  period: "mois" | "trimestre";
 }
 
-const months: MonthData[] = [
-  { label: "Fév", revenu: 3200000, depense: 2400000 },
-  { label: "Mars", revenu: 3550000, depense: 2500000 },
-  { label: "Avr", revenu: 3100000, depense: 2600000 },
-  { label: "Mai", revenu: 4000000, depense: 2750000 },
-  { label: "Juin", revenu: 4300000, depense: 2900000 },
-  { label: "Juil", revenu: 4850000, depense: 3050000 },
-];
+export function RevenueChart({ period }: RevenueChartProps) {
+  const summary = useQuery(api.finance.summary, { period });
+  const months = summary?.months ?? [];
+  const maxVal = Math.max(1, ...months.map((m) => Math.max(m.revenu, m.depense)));
 
-export function RevenueChart() {
-  const maxVal = Math.max(...months.map((m) => Math.max(m.revenu, m.depense)));
+  if (summary && months.every((m) => m.revenu === 0 && m.depense === 0)) {
+    return (
+      <div style={{ fontSize: "13px", color: "var(--slate)", padding: "24px 0" }}>
+        Aucune entrée ou sortie enregistrée pour l&apos;instant.
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "8px 0" }}>

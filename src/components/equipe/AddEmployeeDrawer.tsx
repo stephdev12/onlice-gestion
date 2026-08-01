@@ -116,8 +116,8 @@ export function AddEmployeeDrawer({ isOpen, onClose, onSubmit, isCeo = false }: 
           </select>
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
-          <div className="field" style={{ flex: 1 }}>
+        <div className="form-row">
+          <div className="field">
             <label>Poste</label>
             <input
               type="text"
@@ -127,7 +127,7 @@ export function AddEmployeeDrawer({ isOpen, onClose, onSubmit, isCeo = false }: 
             />
           </div>
 
-          <div className="field" style={{ flex: 1 }}>
+          <div className="field">
             <label>Département</label>
             <select
               value={departement}
@@ -145,8 +145,8 @@ export function AddEmployeeDrawer({ isOpen, onClose, onSubmit, isCeo = false }: 
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
-          <div className="field" style={{ flex: 1 }}>
+        <div className="form-row">
+          <div className="field">
             <label>Date d'embauche</label>
             <input
               type="date"
@@ -155,7 +155,7 @@ export function AddEmployeeDrawer({ isOpen, onClose, onSubmit, isCeo = false }: 
             />
           </div>
 
-          <div className="field" style={{ flex: 1 }}>
+          <div className="field">
             <label>Disponibilité</label>
             <select value={dispo} onChange={(e) => setDispo(e.target.value)}>
               <option value="temps_plein">Temps plein</option>

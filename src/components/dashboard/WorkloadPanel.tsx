@@ -1,21 +1,20 @@
 "use client";
 
 import { motion } from "motion/react";
-
-interface WorkloadItem {
-  label: string;
-  count: number;
-  max: number;
-}
-
-const workloadData: WorkloadItem[] = [
-  { label: "Commercial", count: 9, max: 9 },
-  { label: "Développement", count: 3, max: 9 },
-  { label: "Design", count: 2, max: 9 },
-  { label: "Direction", count: 3, max: 9 },
-];
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
 export function WorkloadPanel() {
+  const workloadData = useQuery(api.employees.workloadByDepartment) ?? [];
+
+  if (workloadData.length === 0) {
+    return (
+      <div style={{ fontSize: "13px", color: "var(--slate)", padding: "12px 0" }}>
+        Aucune mission active pour l&apos;instant.
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
       {workloadData.map((w, idx) => {

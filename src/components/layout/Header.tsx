@@ -46,7 +46,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
           {subtitle && <div className="sub">{subtitle}</div>}
         </div>
 
-        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+        <div className="headbar-actions">
           {actions}
 
           {/* Notifications Button */}

@@ -10,15 +10,19 @@ import { TopClients } from "@/components/dashboard/TopClients";
 import { RepPerformance } from "@/components/dashboard/RepPerformance";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { FinanceJournal } from "@/components/dashboard/FinanceJournal";
+import { AddFinanceEntryDrawer } from "@/components/dashboard/AddFinanceEntryDrawer";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import { Shield, Sparkles, CheckCircle2 } from "lucide-react";
+import { Shield, Sparkles, CheckCircle2, Plus } from "lucide-react";
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<"mois" | "trimestre">("mois");
   const stats = useQuery(api.dashboard.stats, { period });
   const seed = useMutation(api.seed.seedAll);
+  const addFinanceEntry = useMutation(api.finance.create);
   const [seeding, setSeeding] = useState(false);
+  const [financeDrawerOpen, setFinanceDrawerOpen] = useState(false);
 
   const handleSeed = async () => {
     setSeeding(true);
@@ -35,7 +39,7 @@ export default function DashboardPage() {
   const isAdmin = stats?.isAdmin ?? false;
 
   const actions = (
-    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+    <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
       {isAdmin && (
         <Button
           variant="outline"
@@ -104,29 +108,22 @@ export default function DashboardPage() {
 
       <div className="content-body">
         {/* KPI Grid - Tailored by Role */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
-            gap: "14px",
-            marginBottom: "28px",
-          }}
-        >
+        <div className="kpi-grid">
           {isCeo ? (
             <>
               <KpiCard
                 label="Chiffre d'affaires (CEO)"
-                value={stats?.ca ?? 4850000}
+                value={stats?.ca ?? 0}
                 unit="XAF"
                 trend={stats?.caTrend ?? undefined}
                 trendDirection="up"
               />
               <KpiCard
                 label="Trésorerie (CEO)"
-                value={stats?.tresorerie ?? 2130000}
+                value={stats?.tresorerie ?? 0}
                 unit="XAF"
                 trend={stats?.tresorerieTrend ?? undefined}
-                trendDirection="down"
+                trendDirection={stats?.tresorerieUp === false ? "down" : "up"}
               />
               <KpiCard
                 label="Prospects actifs"
@@ -139,11 +136,6 @@ export default function DashboardPage() {
                 unit="en cours"
                 trend={stats?.projetsRetard ? `${stats.projetsRetard} en retard` : undefined}
                 trendDirection="down"
-              />
-              <KpiCard
-                label="Devis envoyés"
-                value={stats?.devisCount ?? 0}
-                sub={stats?.devisSub ?? undefined}
               />
               <KpiCard
                 label="Équipe"
@@ -193,12 +185,8 @@ export default function DashboardPage() {
 
         {/* Dashboard Sections based on Role */}
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: isCeo ? "1.3fr 1fr" : "1fr",
-            gap: "16px",
-            alignItems: "start",
-          }}
+          className="dashboard-grid"
+          style={!isCeo ? { gridTemplateColumns: "1fr" } : undefined}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {isCeo && (
@@ -215,7 +203,38 @@ export default function DashboardPage() {
                 >
                   Revenus vs dépenses — 6 derniers mois (Réservé Direction)
                 </h3>
-                <RevenueChart />
+                <RevenueChart period={period} />
+              </Card>
+            )}
+
+            {isCeo && (
+              <Card hoverEffect={false}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "14px",
+                    gap: "12px",
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--slate)",
+                    }}
+                  >
+                    Journal de caisse
+                  </h3>
+                  <Button variant="outline" onClick={() => setFinanceDrawerOpen(true)} style={{ fontSize: "12.5px" }}>
+                    <Plus size={14} />
+                    Ajouter
+                  </Button>
+                </div>
+                <FinanceJournal />
               </Card>
             )}
 
@@ -269,9 +288,9 @@ export default function DashboardPage() {
                         marginBottom: "14px",
                       }}
                     >
-                      Clients les plus rentables
+                      Meilleures sources de revenus
                     </h3>
-                    <TopClients />
+                    <TopClients period={period} />
                   </Card>
                 )}
 
@@ -295,6 +314,16 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {isCeo && (
+        <AddFinanceEntryDrawer
+          isOpen={financeDrawerOpen}
+          onClose={() => setFinanceDrawerOpen(false)}
+          onSubmit={(data) => {
+            addFinanceEntry(data).catch((e) => console.error(e));
+          }}
+        />
+      )}
     </>
   );
 }

@@ -54,7 +54,7 @@ export function PendingRequests({ requests, onUpdateStatus, canEdit = true }: Pe
             <div className="avatar" style={{ width: "32px", height: "32px", fontSize: "11px" }}>
               {d.employeInitials}
             </div>
-            <div style={{ flex: 1, minWidth: "180px" }}>
+            <div style={{ flex: 1, minWidth: "140px" }}>
               <div style={{ fontSize: "13.5px", fontWeight: 600 }}>
                 {d.employeNom}{" "}
                 <span style={{ fontWeight: 400, color: "var(--slate)" }}>

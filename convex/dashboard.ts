@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query } from "./_generated/server";
 import { getCurrentProfile, getCurrentEmployee } from "./access";
+import { computeFinanceSummary } from "./finance";
 
 export const stats = query({
   args: { period: v.optional(v.string()) }, // "mois" | "trimestre"
@@ -15,11 +16,10 @@ export const stats = query({
         caTrend: null,
         tresorerie: null,
         tresorerieTrend: null,
+        tresorerieUp: null,
         prospectsActifs: 0,
         projetsTotal: 0,
         projetsRetard: 0,
-        devisCount: null,
-        devisSub: null,
         employesTotal: 0,
         demandesEnAttente: 0,
         myTasksCount: 0,
@@ -42,14 +42,17 @@ export const stats = query({
     const today = new Date().toISOString().split("T")[0];
     const lateProjects = projects.filter((p) => p.echeanceDefaut < today).length;
 
-    // Financial numbers strictly reserved for CEO
-    const ca = isCeo ? (period === "trimestre" ? 13150000 : 4850000) : null;
-    const caTrend = isCeo
-      ? (period === "trimestre" ? "▲ 18% vs trimestre précédent" : "▲ 12% vs période précédente")
+    // Financial numbers strictly reserved for CEO, computed from the finance ledger
+    const finance = isCeo ? await computeFinanceSummary(ctx, period) : null;
+    const ca = finance ? finance.totalEntrees : null;
+    const tresorerie = finance ? finance.balance : null;
+    const caTrend = finance
+      ? `Dépenses ${period === "trimestre" ? "du trimestre" : "du mois"} : ${finance.totalSorties.toLocaleString()} XAF`
       : null;
-
-    const tresorerie = isCeo ? 2130000 : null;
-    const tresorerieTrend = isCeo ? "▼ 4% vs mois dernier" : null;
+    const tresorerieTrend = finance
+      ? `${finance.benefice >= 0 ? "▲" : "▼"} ${Math.abs(finance.benefice).toLocaleString()} XAF ce ${period}`
+      : null;
+    const tresorerieUp = finance ? finance.benefice >= 0 : null;
 
     // Assigned tasks count for employee
     let myTasksCount = 0;
@@ -72,11 +75,10 @@ export const stats = query({
       caTrend,
       tresorerie,
       tresorerieTrend,
+      tresorerieUp,
       prospectsActifs: prospects.length,
       projetsTotal: projects.length,
       projetsRetard: lateProjects,
-      devisCount: isCeo ? (period === "trimestre" ? 5 : 2) : null,
-      devisSub: isCeo ? (period === "trimestre" ? "mai – juillet" : "en juillet") : null,
       employesTotal: employees.length,
       demandesEnAttente: pendingDemandes.length,
       myTasksCount,
