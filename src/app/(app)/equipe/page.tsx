@@ -12,9 +12,12 @@ import { api } from "../../../../convex/_generated/api";
 import { Plus } from "lucide-react";
 
 export default function EquipePage() {
-  const employees = useQuery(api.employees.list);
-  const pendingRequests = useQuery(api.employees.pendingDemandes);
   const profile = useQuery(api.profiles.current);
+  const canManage = profile?.role === "ceo" || profile?.role === "admin";
+
+  // employees.list/pendingDemandes require admin/ceo access — skip for employees to avoid an Unauthorized crash
+  const employees = useQuery(api.employees.list, canManage ? {} : "skip");
+  const pendingRequests = useQuery(api.employees.pendingDemandes, canManage ? {} : "skip");
 
   const createEmployee = useMutation(api.employees.create);
   const updateDemandeStatus = useMutation(api.employees.updateDemandeStatus);
@@ -31,7 +34,6 @@ export default function EquipePage() {
   );
 
   const isCeo = profile?.role === "ceo";
-  const canManage = isCeo || profile?.role === "admin";
   const activeEmployees = employees || [];
   const activeRequests = pendingRequests || [];
 

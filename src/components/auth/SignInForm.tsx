@@ -28,7 +28,19 @@ export function SignInForm() {
       router.replace("/dashboard");
     } catch (err: any) {
       console.error("Sign-in error:", err);
-      setError(err.message || "Échec de l'authentification. Vérifiez vos identifiants.");
+      // The Convex Auth client throws a cryptic "Cannot read properties of
+      // null (reading 'redirect')" when the server rejects bad credentials
+      // (wrong password, or no account yet for this email) — show a clear message instead.
+      const message: string = err?.message || "";
+      if (message.includes("reading 'redirect'") || message.toLowerCase().includes("invalidaccountid") || message.toLowerCase().includes("invalidsecret")) {
+        setError(
+          flow === "signIn"
+            ? "Email ou mot de passe incorrect, ou compte pas encore créé. Si vous venez d'être ajouté à l'équipe, utilisez « Créer un compte » avec le même email."
+            : "Impossible de créer le compte. Cet email est peut-être déjà utilisé."
+        );
+      } else {
+        setError(message || "Échec de l'authentification. Vérifiez vos identifiants.");
+      }
     } finally {
       setLoading(false);
     }

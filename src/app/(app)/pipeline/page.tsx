@@ -11,8 +11,11 @@ import { api } from "../../../../convex/_generated/api";
 import { Plus } from "lucide-react";
 
 export default function PipelinePage() {
-  const prospects = useQuery(api.prospects.list);
   const profile = useQuery(api.profiles.current);
+  const canManage = profile?.role === "ceo" || profile?.role === "admin";
+
+  // prospects.list requires admin/ceo access — skip for employees to avoid an Unauthorized crash
+  const prospects = useQuery(api.prospects.list, canManage ? {} : "skip");
 
   const createProspect = useMutation(api.prospects.create);
   const moveStage = useMutation(api.prospects.moveStage);
@@ -27,7 +30,6 @@ export default function PipelinePage() {
   );
 
   const activeProspects = prospects || [];
-  const canManage = profile?.role === "ceo" || profile?.role === "admin";
 
   const handleCreate = async (data: any) => {
     try {

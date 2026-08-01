@@ -57,7 +57,8 @@ export function ProjectDrawer({
   const [taskAssigneId, setTaskAssigneId] = useState<string>("");
   const [err, setErr] = useState(false);
 
-  const employees = useQuery(api.employees.list);
+  // employees.list requires admin/ceo access — skip it for employees to avoid an Unauthorized crash
+  const employees = useQuery(api.employees.list, canManage ? {} : "skip");
 
   if (!project) return null;
 

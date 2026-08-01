@@ -90,15 +90,9 @@
 			"isBackground": false
 		},
 		{
-			"label": "Final clean amend before push",
+			"label": "Clean tasks.json and amend before push",
 			"type": "shell",
-			"command": "git add -A; git commit --amend --no-edit; git log --oneline -1",
-			"isBackground": false
-		},
-		{
-			"label": "Commit mobile drawer z-index fix",
-			"type": "shell",
-			"command": "git add -A; git commit -m 'Fix mobile drawer submit button hidden behind bottom nav bar'",
+			"command": "Remove-Item -Force tasks_diff.txt -ErrorAction SilentlyContinue; git add -A; git commit --amend --no-edit; git log --oneline -1",
 			"isBackground": false
 		}
 	]
