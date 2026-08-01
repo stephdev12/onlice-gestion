@@ -46,7 +46,7 @@ export function Sidebar() {
     <aside className="sidebar">
       <div>
         <div className="sidebar-logo">
-          <Image src="/onlice_logo.png" alt="Onlice" width={140} height={34} />
+          <Image src="/onlice_logo.png" alt="Onlice" width={120} height={34} className="sidebar-logo-img" />
         </div>
         <nav className="sidebar-nav">
           {navItems.map((item) => {

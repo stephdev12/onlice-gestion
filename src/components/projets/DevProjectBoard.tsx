@@ -262,9 +262,9 @@ export function DevProjectBoard({ project, canManage, onUpdateWorkflow, onAddTas
         </form>
       )}
 
-      <div className="project-kanban-3">
+      <div className="kanban-board">
         {( ["attendu", "encours", "termine"] as WorkflowStatus[] ).map((status) => (
-          <div key={status} className="kanban-pro-column"
+          <div key={status} className="kanban-column"
             onDragOver={(e) => e.preventDefault()}
             onDrop={async (e) => {
               const id = e.dataTransfer.getData("text/taskId");

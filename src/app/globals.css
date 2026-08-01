@@ -464,7 +464,7 @@ select {
   font-weight: 600;
 }
 
-.drawer-head .sub {
+..drawer-head .sub {
   font-size: 13px;
   color: var(--slate);
   margin-top: 2px;
@@ -473,6 +473,7 @@ select {
 .drawer-body {
   padding: 20px 24px;
   overflow-y: auto;
+  overflow-x: auto;
   flex: 1;
 }
 
@@ -683,7 +684,11 @@ select {
   }
 
   .sidebar-logo {
-    display: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 64px;
+    min-width: 64px;
   }
 
   .sidebar-user {
@@ -744,7 +749,7 @@ select {
   }
 
   .headbar-actions .header-user-info,
-  .headbar-actions button[title="Se déconnecter"] {
+  .headbar-actions .logout-btn {
     display: none;
   }
 

@@ -104,8 +104,9 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
 
             <button
               onClick={() => void signOut()}
-              className="icon-btn"
+              className="icon-btn logout-btn"
               title="Se déconnecter"
+              aria-label="Se déconnecter"
               style={{ color: "var(--danger)", padding: "6px" }}
             >
               <LogOut size={16} />
