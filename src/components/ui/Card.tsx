@@ -22,6 +22,11 @@ export function Card({ children, className = "", onClick, hoverEffect = true }: 
         padding: "18px",
         background: "var(--paper)",
         cursor: onClick ? "pointer" : "default",
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
+        overflowX: "auto",
       }}
       className={className}
     >

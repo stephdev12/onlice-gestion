@@ -24,7 +24,7 @@ export function FinanceJournal() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxHeight: "320px", overflowY: "auto" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxHeight: "320px", overflowY: "auto", width: "100%", overflowX: "auto", minWidth: 0, wordBreak: "break-word" }}>
       {entries.slice(0, 20).map((e) => (
         <div
           key={e._id}

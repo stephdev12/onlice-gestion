@@ -25,12 +25,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
   return (
     <>
       <header className="headbar">
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <img
-            src="/onlice_logo.png"
-            alt="Onlice ERP"
-            className="header-mobile-logo"
-          />
+        <div>
           <h1>{title}</h1>
           {subtitle && <div className="sub">{subtitle}</div>}
         </div>

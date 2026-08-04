@@ -22,8 +22,8 @@ export function RevenueChart({ period }: RevenueChartProps) {
   }
 
   return (
-    <div style={{ padding: "8px 0" }}>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: "12px", height: "140px" }}>
+    <div style={{ padding: "8px 0", width: "100%", overflowX: "auto", minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: "12px", height: "140px", minWidth: "260px" }}>
         {months.map((m, idx) => {
           const revHeight = Math.round((m.revenu / maxVal) * 120);
           const depHeight = Math.round((m.depense / maxVal) * 120);
