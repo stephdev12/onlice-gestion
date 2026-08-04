@@ -113,7 +113,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="content-body">
+      <div className="content-body" style={{ width: "100%", maxWidth: "100%", overflowX: "hidden", boxSizing: "border-box" }}>
         {/* KPI Grid - Tailored by Role */}
         <div className="kpi-grid">
           {isCeo ? (
