@@ -803,11 +803,19 @@ html[data-theme='dark'] .sidebar-mobile-bar {
   display: flex;
 }
 
+/* ═══ Login Page Background ═══════════════════════════════════════════ */
+.login-page-bg {
+  background: radial-gradient(circle at 50% 30%, var(--orange-tint) 0%, var(--paper) 70%);
+}
+
 /* ═══ Documents grid ═════════════════════════════════════════════════ */
 .doc-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .doc-card {
@@ -819,6 +827,11 @@ html[data-theme='dark'] .sidebar-mobile-bar {
   align-items: center;
   gap: 12px;
   transition: border-color 0.15s ease;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .doc-card:hover { border-color: var(--slate); }

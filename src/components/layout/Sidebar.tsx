@@ -237,8 +237,9 @@ export function Sidebar() {
             <Image
               src="/onlice_logo.png"
               alt="Onlice ERP"
-              width={140}
-              height={38}
+              width={160}
+              height={44}
+              style={{ width: "auto", height: "36px", objectFit: "contain" }}
               className="sidebar-logo-img"
               priority
             />

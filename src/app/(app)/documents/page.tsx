@@ -20,6 +20,8 @@ import {
   Plus,
   Search,
   ExternalLink,
+  User,
+  X,
 } from "lucide-react";
 import { staggerContainer, fadeInUp } from "@/lib/animations";
 
@@ -53,15 +55,28 @@ export default function DocumentsPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const handleFileReady = async (file: File) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [docTitle, setDocTitle] = useState("");
+  const [docDesc, setDocDesc] = useState("");
+
+  const handleFileSelect = (file: File) => {
+    setSelectedFile(file);
+    if (!docTitle.trim()) {
+      setDocTitle(file.name);
+    }
+    setUploadError(null);
+  };
+
+  const handleUploadSubmit = async () => {
+    if (!selectedFile || !docTitle.trim()) return;
     setUploading(true);
     setUploadError(null);
     try {
       const postUrl = await generateUploadUrl();
       const result = await fetch(postUrl, {
         method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
+        headers: { "Content-Type": selectedFile.type },
+        body: selectedFile,
       });
 
       if (!result.ok) {
@@ -71,13 +86,17 @@ export default function DocumentsPage() {
       const { storageId } = await result.json();
 
       await createDocument({
-        titre: file.name,
+        titre: docTitle.trim(),
+        description: docDesc.trim() || undefined,
         storageId,
-        type: file.type || "application/octet-stream",
-        size: file.size,
+        type: selectedFile.type || "application/octet-stream",
+        size: selectedFile.size,
       });
 
       setIsUploadDrawerOpen(false);
+      setSelectedFile(null);
+      setDocTitle("");
+      setDocDesc("");
     } catch (err: any) {
       console.error(err);
       setUploadError(err.message || "Erreur inconnue");
@@ -97,9 +116,13 @@ export default function DocumentsPage() {
     }
   };
 
-  const filteredDocs = (documents || []).filter((doc: any) =>
-    doc.titre.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredDocs = (documents || []).filter((doc: any) => {
+    const term = search.toLowerCase();
+    const titleMatch = (doc.titre || "").toLowerCase().includes(term);
+    const descMatch = (doc.description || "").toLowerCase().includes(term);
+    const authorMatch = (doc.auteur || "").toLowerCase().includes(term);
+    return titleMatch || descMatch || authorMatch;
+  });
 
   const headerActions = (
     <Button variant="accent" onClick={() => setIsUploadDrawerOpen(true)}>
@@ -121,7 +144,7 @@ export default function DocumentsPage() {
           <TextInput
             value={search}
             onChange={setSearch}
-            placeholder="Rechercher par nom..."
+            placeholder="Rechercher par titre, description, expéditeur..."
             icon={<Search size={16} />}
             clearable
           />
@@ -180,40 +203,70 @@ export default function DocumentsPage() {
                           fontSize: "14px",
                           fontWeight: 600,
                           color: "var(--ink)",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
+                          wordBreak: "break-word",
+                          lineHeight: 1.35,
                         }}
                         title={doc.titre}
                       >
                         {doc.titre}
                       </div>
+
+                      {doc.description && (
+                        <div
+                          style={{
+                            fontSize: "12.5px",
+                            color: "var(--slate)",
+                            marginTop: "4px",
+                            wordBreak: "break-word",
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          {doc.description}
+                        </div>
+                      )}
+
                       <div
                         style={{
                           display: "flex",
                           alignItems: "center",
                           gap: "8px",
-                          fontSize: "11.5px",
+                          fontSize: "12px",
                           color: "var(--slate)",
-                          marginTop: "2px",
+                          marginTop: "6px",
                           flexWrap: "wrap",
                         }}
                       >
-                        <span>{formatBytes(doc.size)}</span>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            background: "var(--mist)",
+                            padding: "2px 8px",
+                            borderRadius: "12px",
+                            color: "var(--ink)",
+                            fontWeight: 500,
+                            fontSize: "11.5px",
+                          }}
+                        >
+                          <User size={12} />
+                          Expédié par {doc.auteur || "Utilisateur"}
+                        </span>
                         <span>•</span>
-                        <span>Ajouté par {doc.auteur || "Utilisateur"}</span>
+                        <span>{formatBytes(doc.size)}</span>
                         <span>•</span>
                         <span>
                           {new Date(doc.createdAt).toLocaleDateString("fr-FR", {
                             day: "numeric",
                             month: "short",
+                            year: "numeric",
                           })}
                         </span>
                       </div>
                     </div>
 
                     {/* Actions */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
                       {doc.url && (
                         <a
                           href={doc.url}
@@ -231,7 +284,7 @@ export default function DocumentsPage() {
                         onClick={(e) => handleDelete(doc._id, e)}
                         className="icon-btn"
                         style={{ color: "var(--danger)" }}
-                        title="Supprimer"
+                        title="Supprimer définitivement"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -259,16 +312,85 @@ export default function DocumentsPage() {
       <Drawer
         isOpen={isUploadDrawerOpen}
         onClose={() => {
-          if (!uploading) setIsUploadDrawerOpen(false);
+          if (!uploading) {
+            setIsUploadDrawerOpen(false);
+            setSelectedFile(null);
+            setDocTitle("");
+            setDocDesc("");
+          }
         }}
         title="Ajouter un document"
-        subtitle="Déposez un fichier à partager avec l'équipe"
+        subtitle="Déposez un fichier, nommez-le et partagez-le avec l'équipe"
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <FileUpload
-            onFileReady={handleFileReady}
-            label="Glissez un fichier ou cliquez ici"
-            maxFileSize={20 * 1024 * 1024} // 20 MB max
+          {!selectedFile ? (
+            <FileUpload
+              onFileReady={handleFileSelect}
+              label="Glissez un fichier ou cliquez ici pour sélectionner"
+              maxFileSize={20 * 1024 * 1024} // 20 MB max
+            />
+          ) : (
+            <div
+              style={{
+                border: "1px solid var(--mist-line)",
+                borderRadius: "var(--radius)",
+                padding: "14px",
+                background: "var(--mist)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
+                <div className="doc-icon" style={{ background: "var(--paper)" }}>
+                  {getFileIcon(selectedFile.type)}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      color: "var(--ink)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {selectedFile.name}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "var(--slate)", marginTop: "2px" }}>
+                    {formatBytes(selectedFile.size)} • {selectedFile.type || "Fichier"}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedFile(null)}
+                className="icon-btn"
+                title="Changer de fichier"
+                disabled={uploading}
+              >
+                <X size={18} />
+              </button>
+            </div>
+          )}
+
+          <TextInput
+            label="Nom / Titre du document"
+            placeholder="Ex: Rapport Stratégique Q3 2026.pdf"
+            value={docTitle}
+            onChange={setDocTitle}
+            required
+            disabled={uploading}
+          />
+
+          <TextInput
+            label="Description courte (optionnel)"
+            placeholder="Ex: Version signée et validée par l'équipe financière"
+            value={docDesc}
+            onChange={setDocDesc}
+            disabled={uploading}
           />
 
           {uploadError && (
@@ -286,10 +408,33 @@ export default function DocumentsPage() {
             </div>
           )}
 
-          <div style={{ fontSize: "12px", color: "var(--slate)", lineHeight: 1.5 }}>
+          <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsUploadDrawerOpen(false);
+                setSelectedFile(null);
+                setDocTitle("");
+                setDocDesc("");
+              }}
+              style={{ flex: 1 }}
+              disabled={uploading}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="accent"
+              onClick={handleUploadSubmit}
+              disabled={!selectedFile || !docTitle.trim() || uploading}
+              style={{ flex: 2 }}
+            >
+              {uploading ? "Envoi en cours..." : "Publier le document"}
+            </Button>
+          </div>
+
+          <div style={{ fontSize: "12px", color: "var(--slate)", lineHeight: 1.5, marginTop: "4px" }}>
             <p>
-              Les documents envoyés sont stockés de manière sécurisée et sont accessibles
-              à l&apos;ensemble de l&apos;équipe.
+              Le document sera immédiatement classé et associé à votre nom en tant qu&apos;expéditeur.
             </p>
           </div>
         </div>

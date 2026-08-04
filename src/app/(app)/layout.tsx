@@ -45,7 +45,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         }}
       >
         <div style={{ textAlign: "center" }}>
-          <Image src="/onlice_logo.png" alt="Onlice" width={180} height={46} />
+          <Image
+            src="/onlice_logo.png"
+            alt="Onlice"
+            width={300}
+            height={100}
+            style={{ width: "auto", height: "46px", objectFit: "contain" }}
+            priority
+          />
           <div style={{ fontSize: "13px", color: "var(--slate)", marginTop: 10 }}>
             {!isLoading && isAuthenticated
               ? "Initialisation de votre espace..."

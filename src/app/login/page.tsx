@@ -7,13 +7,13 @@ import { motion } from "motion/react";
 export default function LoginPage() {
   return (
     <div
+      className="login-page-bg"
       style={{
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "radial-gradient(circle at 50% 30%, #FDEDE5 0%, #FFFFFF 70%)",
         padding: "24px",
       }}
     >
@@ -23,8 +23,15 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         style={{ textAlign: "center", marginBottom: "32px" }}
       >
-        <Image src="/onlice_logo.png" alt="Onlice" width={180} height={46} style={{ marginBottom: 8 }} />
-        <div style={{ fontSize: "15px", color: "var(--slate)" }}>
+        <Image
+          src="/onlice_logo.png"
+          alt="Onlice"
+          width={300}
+          height={100}
+          style={{ width: "auto", height: "46px", objectFit: "contain", marginBottom: 12 }}
+          priority
+        />
+        <div style={{ fontSize: "15px", color: "var(--slate)", fontWeight: 500 }}>
           Plateforme ERP Écosystème Startup
         </div>
       </motion.div>

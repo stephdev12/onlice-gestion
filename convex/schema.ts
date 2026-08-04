@@ -180,6 +180,7 @@ export default defineSchema({
   // Documents / Fichiers partagés
   documents: defineTable({
     titre: v.string(),
+    description: v.optional(v.string()),
     storageId: v.id("_storage"),
     type: v.string(), // mime type or file extension
     size: v.number(),

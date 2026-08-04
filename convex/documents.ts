@@ -15,6 +15,7 @@ export const generateUploadUrl = mutation({
 export const create = mutation({
   args: {
     titre: v.string(),
+    description: v.optional(v.string()),
     storageId: v.id("_storage"),
     type: v.string(),
     size: v.number(),
@@ -30,10 +31,16 @@ export const create = mutation({
       .filter((q) => q.eq("email", identity.email))
       .first();
 
-    const auteur = identity.name || identity.email || "Utilisateur";
+    const employee = await ctx.db
+      .query("employees")
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .first();
+
+    const auteur = employee?.nom || user?.name || identity.name || identity.email || "Utilisateur";
 
     const docId = await ctx.db.insert("documents", {
       titre: args.titre,
+      description: args.description,
       storageId: args.storageId,
       type: args.type,
       size: args.size,
