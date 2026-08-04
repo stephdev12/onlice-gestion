@@ -138,6 +138,19 @@ export default function ProjetsPage() {
         )}
       </div>
 
+      {/* Floating Action Button (FAB) on mobile */}
+      {canManage && (
+        <button
+          type="button"
+          onClick={() => setIsAddOpen(true)}
+          className="fab"
+          aria-label="Nouveau projet"
+          title="Nouveau projet"
+        >
+          <Plus size={24} />
+        </button>
+      )}
+
       <ProjectDrawer
         project={selectedProject as any}
         onClose={() => setSelectedId(null)}

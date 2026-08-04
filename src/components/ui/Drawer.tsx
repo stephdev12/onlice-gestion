@@ -1,7 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import { slideFromRight, backdropFade } from "@/lib/animations";
+import { slideFromRight, slideFromBottom, backdropFade } from "@/lib/animations";
+import { useEffect, useState } from "react";
 
 interface DrawerProps {
   isOpen: boolean;
@@ -12,6 +13,17 @@ interface DrawerProps {
 }
 
 export function Drawer({ isOpen, onClose, title, subtitle, children }: DrawerProps) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 641);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const variants = isMobile ? slideFromBottom : slideFromRight;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -25,12 +37,15 @@ export function Drawer({ isOpen, onClose, title, subtitle, children }: DrawerPro
             className="overlay"
           />
           <motion.div
-            variants={slideFromRight}
+            variants={variants}
             initial="hidden"
             animate="visible"
             exit="exit"
             className="drawer"
           >
+            {/* Drag handle (mobile) */}
+            {isMobile && <div className="drawer-drag-handle" />}
+
             <div className="drawer-head">
               <div>
                 <h2>{title}</h2>

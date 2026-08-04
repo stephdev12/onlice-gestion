@@ -4,4 +4,5 @@ gittoken
 node_modules/
 .next/
 tsconfig.tsbuildinfo
-public/
+.gemini/
+

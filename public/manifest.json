@@ -1,0 +1,24 @@
+{
+  "name": "Onlice ERP — Plateforme de Gestion",
+  "short_name": "Onlice ERP",
+  "description": "Solution ERP moderne pour startups : CRM, Projets, RH et Finance.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#F75406",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo_icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo_icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

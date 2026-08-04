@@ -176,4 +176,18 @@ export default defineSchema({
   })
     .index("by_employe", ["employeId"])
     .index("by_statut", ["statut"]),
+
+  // Documents / Fichiers partagés
+  documents: defineTable({
+    titre: v.string(),
+    storageId: v.id("_storage"),
+    type: v.string(), // mime type or file extension
+    size: v.number(),
+    auteur: v.optional(v.string()),
+    createdBy: v.optional(v.id("users")),
+    createdAt: v.number(),
+  })
+    .index("by_createdAt", ["createdAt"])
+    .index("by_createdBy", ["createdBy"]),
 });
+

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
+import { Slider } from "@/components/ui/Slider";
 import { formatDate } from "@/lib/utils";
 import { motion } from "motion/react";
 import { Trash2 } from "lucide-react";
@@ -37,6 +38,13 @@ export function TaskItem({ task, onUpdateProgress, onDelete, canDelete = true }:
       : progress > 0
       ? "var(--orange)"
       : "var(--slate)";
+
+  const sliderVariant =
+    progress >= 100
+      ? "termine"
+      : progress > 0
+      ? "encours"
+      : "default";
 
   return (
     <motion.div
@@ -76,13 +84,8 @@ export function TaskItem({ task, onUpdateProgress, onDelete, canDelete = true }:
         {canDelete && (
           <button
             onClick={() => onDelete(task._id)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--slate)",
-              cursor: "pointer",
-              padding: "2px 4px",
-            }}
+            className="icon-btn"
+            style={{ minWidth: "36px", minHeight: "36px", padding: "6px" }}
             title="Supprimer la tâche"
           >
             <Trash2 size={14} />
@@ -105,30 +108,16 @@ export function TaskItem({ task, onUpdateProgress, onDelete, canDelete = true }:
         <span>Assigné: {task.assigne || "—"}</span>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={5}
-          value={progress}
-          onChange={(e) => setProgress(parseInt(e.target.value, 10))}
-          onMouseUp={() => onUpdateProgress(task._id, progress)}
-          onTouchEnd={() => onUpdateProgress(task._id, progress)}
-          style={{ flex: 1, accentColor: "var(--ink)", cursor: "pointer" }}
-        />
-        <span
-          style={{
-            fontFamily: "'Geist Mono', monospace",
-            fontSize: "11.5px",
-            color: "var(--slate)",
-            width: "36px",
-            textAlign: "right",
-          }}
-        >
-          {progress}%
-        </span>
-      </div>
+      <Slider
+        value={progress}
+        min={0}
+        max={100}
+        step={5}
+        onChange={setProgress}
+        onChangeEnd={(val) => onUpdateProgress(task._id, val)}
+        variant={sliderVariant}
+        showValue={false}
+      />
     </motion.div>
   );
 }

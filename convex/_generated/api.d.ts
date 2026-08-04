@@ -11,6 +11,7 @@
 import type * as access from "../access.js";
 import type * as auth from "../auth.js";
 import type * as dashboard from "../dashboard.js";
+import type * as documents from "../documents.js";
 import type * as employees from "../employees.js";
 import type * as finance from "../finance.js";
 import type * as http from "../http.js";
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   access: typeof access;
   auth: typeof auth;
   dashboard: typeof dashboard;
+  documents: typeof documents;
   employees: typeof employees;
   finance: typeof finance;
   http: typeof http;

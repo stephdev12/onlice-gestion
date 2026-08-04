@@ -12,7 +12,9 @@ export const metadata: Metadata = {
     { rel: "apple-touch-icon", url: "/logo_icon.png" },
     { rel: "shortcut icon", url: "/logo_icon.png" },
   ],
+  manifest: "/manifest.json",
 };
+
 
 export default function RootLayout({
   children,

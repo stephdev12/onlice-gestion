@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { LogOut, Bell, Check, Sparkles } from "lucide-react";
+import { Bell, Check, Sparkles } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
-import { ThemeToggle } from "./ThemeToggle";
-import { InstallAppButton } from "./InstallAppButton";
+import { ProfileDropdown } from "./ProfileDropdown";
 
 interface HeaderProps {
   title: string;
@@ -16,8 +14,6 @@ interface HeaderProps {
 }
 
 export function Header({ title, subtitle, actions }: HeaderProps) {
-  const { signOut } = useAuthActions();
-  const profile = useQuery(api.profiles.current);
   const notifications = useQuery(api.projects.notifications);
   const markRead = useMutation(api.projects.markNotificationRead);
   const updateTaskProgress = useMutation(api.projects.updateTaskProgress);
@@ -25,20 +21,6 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const unreadCount = (notifications || []).filter((n) => !n.readAt).length;
-
-  const roleLabel =
-    profile?.role === "ceo"
-      ? "CEO (Direction)"
-      : profile?.role === "admin"
-      ? "Administrateur"
-      : "Employé";
-
-  const avatarInitials =
-    profile?.role === "ceo"
-      ? "CE"
-      : profile?.role === "admin"
-      ? "AD"
-      : "EM";
 
   return (
     <>
@@ -50,14 +32,12 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
 
         <div className="headbar-actions">
           {actions}
-          <InstallAppButton />
-          <ThemeToggle />
 
           {/* Notifications Button */}
           <button
             onClick={() => setShowNotifications(true)}
             className="icon-btn"
-            style={{ position: "relative", padding: "8px" }}
+            style={{ position: "relative" }}
             title="Notifications & Missions"
           >
             <Bell size={18} />
@@ -65,8 +45,8 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
               <span
                 style={{
                   position: "absolute",
-                  top: "2px",
-                  right: "2px",
+                  top: "4px",
+                  right: "4px",
                   width: "16px",
                   height: "16px",
                   borderRadius: "50%",
@@ -84,34 +64,8 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
             )}
           </button>
 
-          {/* User profile & Logout button (ALWAYS visible on desktop & mobile) */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              paddingLeft: "8px",
-              borderLeft: "1px solid var(--mist-line)",
-            }}
-          >
-            <div className="avatar" style={{ width: "30px", height: "30px", fontSize: "11px" }}>
-              {avatarInitials}
-            </div>
-            <div className="header-user-info" style={{ fontSize: "12px" }}>
-              <div style={{ fontWeight: 600 }}>{profile?.name || "Utilisateur"}</div>
-              <div style={{ fontSize: "10px", color: "var(--slate)" }}>{roleLabel}</div>
-            </div>
-
-            <button
-              onClick={() => void signOut()}
-              className="icon-btn logout-btn"
-              title="Se déconnecter"
-              aria-label="Se déconnecter"
-              style={{ color: "var(--danger)", padding: "6px" }}
-            >
-              <LogOut size={16} />
-            </button>
-          </div>
+          {/* Profile Dropdown */}
+          <ProfileDropdown />
         </div>
       </header>
 
@@ -169,7 +123,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
                       await markRead({ id: n._id });
                     }}
                     className="btn btn-approve"
-                    style={{ fontSize: "11.5px", padding: "4px 8px" }}
+                    style={{ fontSize: "11.5px", padding: "6px 10px" }}
                   >
                     <Check size={12} /> Marquer 100% Terminé
                   </button>

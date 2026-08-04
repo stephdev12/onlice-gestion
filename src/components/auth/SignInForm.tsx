@@ -7,7 +7,8 @@ import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/Button";
-import { Eye, EyeOff } from "lucide-react";
+import { TextInput } from "@/components/ui/TextInput";
+import { Mail, User, Lock } from "lucide-react";
 
 export function SignInForm() {
   const { signIn } = useAuthActions();
@@ -15,38 +16,37 @@ export function SignInForm() {
   const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [name, setNameInput] = useState("");
+  const [password, setPassword] = useState("");
+
   const setName = useMutation(api.profiles.setName);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setLoading(true);
-    const formData = new FormData(event.currentTarget);
-    formData.set("flow", flow);
 
-    const params = Object.fromEntries(formData.entries());
-    console.debug("SignInForm submit params:", params);
+    const formData = new FormData();
+    formData.set("email", email);
+    formData.set("password", password);
+    formData.set("flow", flow);
+    if (flow === "signUp") {
+      formData.set("name", name);
+    }
 
     try {
       await signIn("password", formData);
-      // if the user just created an account, set their display name from the form
-      if (flow === "signUp") {
-        const name = formData.get("name") as string | null;
-        if (name && name.trim()) {
-          try {
-            await setName({ name: name.trim() });
-          } catch (e) {
-            console.debug("Could not set profile name:", e);
-          }
+      if (flow === "signUp" && name.trim()) {
+        try {
+          await setName({ name: name.trim() });
+        } catch (e) {
+          console.debug("Could not set profile name:", e);
         }
       }
       router.replace("/dashboard");
     } catch (err: any) {
       console.error("Sign-in error:", err);
-      // The Convex Auth client throws a cryptic "Cannot read properties of
-      // null (reading 'redirect')" when the server rejects bad credentials
-      // (wrong password, or no account yet for this email) — show a clear message instead.
       const message: string = err?.message || "";
       if (message.includes("reading 'redirect'") || message.toLowerCase().includes("invalidaccountid") || message.toLowerCase().includes("invalidsecret")) {
         setError(
@@ -71,46 +71,41 @@ export function SignInForm() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: flow === "signIn" ? 20 : -20 }}
           transition={{ duration: 0.25 }}
+          style={{ display: "flex", flexDirection: "column", gap: "16px" }}
         >
-          <div className="field">
-            <label htmlFor="email">Adresse Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="votre.nom@onlice.cm"
-              required
-            />
-          </div>
+          <TextInput
+            value={email}
+            onChange={setEmail}
+            label="Adresse Email"
+            placeholder="votre.nom@onlice.cm"
+            type="email"
+            icon={<Mail size={16} />}
+            required
+            name="email"
+          />
 
           {flow === "signUp" && (
-            <div className="field">
-              <label htmlFor="name">Nom complet</label>
-              <input id="name" name="name" type="text" placeholder="Jean Dupont" required />
-            </div>
+            <TextInput
+              value={name}
+              onChange={setNameInput}
+              label="Nom complet"
+              placeholder="Jean Dupont"
+              icon={<User size={16} />}
+              required
+              name="name"
+            />
           )}
 
-          <div className="field">
-            <label htmlFor="password">Mot de passe</label>
-            <div className="password-wrap">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                required
-              />
-              <button
-                type="button"
-                className="password-eye"
-                onClick={() => setShowPassword((v) => !v)}
-                title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-                aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-          </div>
+          <TextInput
+            value={password}
+            onChange={setPassword}
+            label="Mot de passe"
+            placeholder="••••••••"
+            type="password"
+            icon={<Lock size={16} />}
+            required
+            name="password"
+          />
         </motion.div>
       </AnimatePresence>
 
@@ -119,13 +114,25 @@ export function SignInForm() {
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           className="field-err"
-          style={{ marginBottom: "16px", padding: "8px 12px", background: "var(--danger-tint)", borderRadius: "6px" }}
+          style={{
+            marginTop: "16px",
+            padding: "10px 14px",
+            background: "var(--danger-tint)",
+            borderRadius: "var(--radius-sm)",
+            fontSize: "12.5px",
+            fontWeight: 500,
+          }}
         >
           {error}
         </motion.div>
       )}
 
-      <Button variant="accent" type="submit" style={{ width: "100%", marginTop: "8px" }} disabled={loading}>
+      <Button
+        variant="accent"
+        type="submit"
+        style={{ width: "100%", marginTop: "20px" }}
+        disabled={loading}
+      >
         {loading
           ? "Chargement..."
           : flow === "signIn"
@@ -147,6 +154,7 @@ export function SignInForm() {
             fontSize: "13px",
             cursor: "pointer",
             textDecoration: "underline",
+            fontFamily: "inherit",
           }}
         >
           {flow === "signIn"
