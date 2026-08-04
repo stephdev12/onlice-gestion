@@ -154,22 +154,46 @@ html[data-theme='dark'] .sidebar-mobile-bar {
 /* ═══ Headbar ═════════════════════════════════════════════════════════ */
 .headbar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
   border-bottom: 1px solid var(--mist-line);
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-.headbar h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
-.headbar .sub { font-size: 12px; color: var(--slate); margin-top: 1px; }
+.headbar > div:first-child {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+.headbar h1 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.headbar .sub {
+  font-size: 12px;
+  color: var(--slate);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .headbar-actions {
   display: flex;
   gap: 8px;
   align-items: center;
   flex-shrink: 0;
+  max-width: 100%;
   flex-wrap: wrap;
 }
 
@@ -815,9 +839,9 @@ html[data-theme='dark'] .sidebar-mobile-bar {
 *:hover > .liquid-glass-shine { opacity: 1 !important; }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   TABLET & DESKTOP (min-width: 641px)
+   DESKTOP (min-width: 901px)
    ═══════════════════════════════════════════════════════════════════════ */
-@media (min-width: 641px) {
+@media (min-width: 901px) {
   .sidebar-mobile-bar {
     display: none !important;
   }

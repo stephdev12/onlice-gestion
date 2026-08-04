@@ -39,60 +39,6 @@ export default function DashboardPage() {
   const isCeo = stats?.isCeo ?? false;
   const isAdmin = stats?.isAdmin ?? false;
 
-  const actions = (
-    <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-      {isAdmin && (
-        <Button
-          variant="outline"
-          onClick={handleSeed}
-          disabled={seeding}
-          style={{ fontSize: "12.5px" }}
-        >
-          <Sparkles size={14} />
-          {seeding ? "Initialisation..." : "Réinitialiser les données de démo"}
-        </Button>
-      )}
-
-      {isCeo && (
-        <div
-          style={{
-            display: "flex",
-            border: "1px solid var(--mist-line)",
-            borderRadius: "8px",
-            overflow: "hidden",
-          }}
-        >
-          <button
-            onClick={() => setPeriod("mois")}
-            style={{
-              background: period === "mois" ? "var(--ink)" : "var(--paper)",
-              color: period === "mois" ? "#fff" : "var(--slate)",
-              border: "none",
-              padding: "7px 14px",
-              fontSize: "12.5px",
-              cursor: "pointer",
-            }}
-          >
-            Ce mois
-          </button>
-          <button
-            onClick={() => setPeriod("trimestre")}
-            style={{
-              background: period === "trimestre" ? "var(--ink)" : "var(--paper)",
-              color: period === "trimestre" ? "#fff" : "var(--slate)",
-              border: "none",
-              padding: "7px 14px",
-              fontSize: "12.5px",
-              cursor: "pointer",
-            }}
-          >
-            Ce trimestre
-          </button>
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <>
       <Header
@@ -104,7 +50,6 @@ export default function DashboardPage() {
             ? "Gestion opérationnelle de l'équipe et des projets"
             : "Espace personnel et suivi de vos missions"
         }
-        actions={actions}
       />
 
       {profile && profile.name && profile.role === "employe" && (
@@ -198,18 +143,66 @@ export default function DashboardPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {isCeo && (
               <Card hoverEffect={false}>
-                <h3
+                <div
                   style={{
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    color: "var(--slate)",
-                    marginBottom: "18px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "16px",
+                    flexWrap: "wrap",
+                    gap: "10px",
                   }}
                 >
-                  Revenus vs dépenses — 6 derniers mois (Réservé Direction)
-                </h3>
+                  <h3
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--slate)",
+                      margin: 0,
+                    }}
+                  >
+                    Revenus vs dépenses — 6 derniers mois (Réservé Direction)
+                  </h3>
+                  <div
+                    style={{
+                      display: "flex",
+                      border: "1px solid var(--mist-line)",
+                      borderRadius: "8px",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <button
+                      onClick={() => setPeriod("mois")}
+                      style={{
+                        background: period === "mois" ? "var(--ink)" : "var(--paper)",
+                        color: period === "mois" ? "#fff" : "var(--slate)",
+                        border: "none",
+                        padding: "6px 12px",
+                        fontSize: "12px",
+                        cursor: "pointer",
+                        fontWeight: period === "mois" ? 600 : 500,
+                      }}
+                    >
+                      Ce mois
+                    </button>
+                    <button
+                      onClick={() => setPeriod("trimestre")}
+                      style={{
+                        background: period === "trimestre" ? "var(--ink)" : "var(--paper)",
+                        color: period === "trimestre" ? "#fff" : "var(--slate)",
+                        border: "none",
+                        padding: "6px 12px",
+                        fontSize: "12px",
+                        cursor: "pointer",
+                        fontWeight: period === "trimestre" ? 600 : 500,
+                      }}
+                    >
+                      Ce trimestre
+                    </button>
+                  </div>
+                </div>
                 <RevenueChart period={period} />
               </Card>
             )}
@@ -320,6 +313,20 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+
+        {isAdmin && (
+          <div style={{ marginTop: "24px", display: "flex", justifyContent: "flex-end", flexWrap: "wrap" }}>
+            <Button
+              variant="outline"
+              onClick={handleSeed}
+              disabled={seeding}
+              style={{ fontSize: "12.5px" }}
+            >
+              <Sparkles size={14} />
+              {seeding ? "Initialisation..." : "Réinitialiser les données de démo"}
+            </Button>
+          </div>
+        )}
       </div>
 
       {isCeo && (
